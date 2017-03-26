@@ -1,0 +1,768 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.png?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="Amoeba是一个以MySQL为底层数据存储，并对应用提供MySQL协议接口的proxy。它集中地响应应用的请求，依据用户事先设置的规则，将SQL请求发送到特定的数据库上执行。基于此可以实现负载均衡、读写分离、高可用性等需求。Amoeba相当于一个SQL请求的路由器，目的是为负载均衡、读写分离、高可用性提供机制，而不是完全实现它们。用户需要结合使用MySQL的 Replication等机制来实现副">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Amoeba实现mysql读写分离">
+<meta property="og:url" content="http://yoursite.com/2016/10/12/Amoeba实现mysql读写分离/index.html">
+<meta property="og:site_name" content="lSky's blog">
+<meta property="og:description" content="Amoeba是一个以MySQL为底层数据存储，并对应用提供MySQL协议接口的proxy。它集中地响应应用的请求，依据用户事先设置的规则，将SQL请求发送到特定的数据库上执行。基于此可以实现负载均衡、读写分离、高可用性等需求。Amoeba相当于一个SQL请求的路由器，目的是为负载均衡、读写分离、高可用性提供机制，而不是完全实现它们。用户需要结合使用MySQL的 Replication等机制来实现副">
+<meta property="og:image" content="http://img.blog.csdn.net/20161012200429960">
+<meta property="og:updated_time" content="2017-02-25T09:07:42.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Amoeba实现mysql读写分离">
+<meta name="twitter:description" content="Amoeba是一个以MySQL为底层数据存储，并对应用提供MySQL协议接口的proxy。它集中地响应应用的请求，依据用户事先设置的规则，将SQL请求发送到特定的数据库上执行。基于此可以实现负载均衡、读写分离、高可用性等需求。Amoeba相当于一个SQL请求的路由器，目的是为负载均衡、读写分离、高可用性提供机制，而不是完全实现它们。用户需要结合使用MySQL的 Replication等机制来实现副">
+<meta name="twitter:image" content="http://img.blog.csdn.net/20161012200429960">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/10/12/Amoeba实现mysql读写分离/"/>
+
+
+
+
+
+  <title> Amoeba实现mysql读写分离 | lSky's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lSky's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/10/12/Amoeba实现mysql读写分离/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="little sky">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="http://olno6tnmz.bkt.clouddn.com/1.JPG">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="lSky's blog">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="lSky's blog" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Amoeba实现mysql读写分离
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-10-12T20:14:18+08:00">
+                2016-10-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/12/Amoeba实现mysql读写分离/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/12/Amoeba实现mysql读写分离/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>Amoeba是一个以MySQL为底层数据存储，并对应用提供MySQL协议接口的proxy。它集中地响应应用的请求，依据用户事先设置的规则，将SQL请求发送到特定的数据库上执行。基于此可以实现负载均衡、读写分离、高可用性等需求。<br>Amoeba相当于一个SQL请求的路由器，目的是为负载均衡、读写分离、高可用性提供机制，而不是完全实现它们。用户需要结合使用MySQL的 Replication等机制来实现副本同步等功能。amoeba对底层数据库连接管理和路由实现也采用了可插拨的机制，第三方可以开发更高级的策略类来替代作者的实现。<br><a id="more"></a></p>
+<p><img src="http://img.blog.csdn.net/20161012200429960" alt="这里写图片描述"><br>Tips:slave上涉及到复制的数据库不可以写,避免master和slave数据不一致</p>
+<h2 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h2><p>两台centos6.5服务器<br>master ip： 192.168.44.137<br>slave ip：192.168.44.139<br>Amoeba置于master服务器上，也可单独放置</p>
+<h2 id="一．安装Amoeba"><a href="#一．安装Amoeba" class="headerlink" title="一．安装Amoeba"></a>一．安装Amoeba</h2><p><a href="http://sourceforge.net/projects/amoeba/files/Amoeba%20for%20mysql/3.x/amoeba-mysql-3.0.5-RC-distribution.zip" target="_blank" rel="external">http://sourceforge.net/projects/amoeba/files/Amoeba%20for%20mysql/3.x/amoeba-mysql-3.0.5-RC-distribution.zip</a><br>首先需要java环境</p>
+<blockquote>
+<h1 id="tar-xzvf-amoeba-mysql-3-0-5-RC-distribution-zip"><a href="#tar-xzvf-amoeba-mysql-3-0-5-RC-distribution-zip" class="headerlink" title="tar -xzvf amoeba-mysql-3.0.5-RC-distribution.zip"></a>tar -xzvf amoeba-mysql-3.0.5-RC-distribution.zip</h1><h1 id="mv-amoeba-mysql-3-0-5-RC-opt-amoeba"><a href="#mv-amoeba-mysql-3-0-5-RC-opt-amoeba" class="headerlink" title="mv amoeba-mysql-3.0.5-RC /opt/amoeba"></a>mv amoeba-mysql-3.0.5-RC /opt/amoeba</h1><h1 id="vim-etc-profile"><a href="#vim-etc-profile" class="headerlink" title="vim /etc/profile"></a>vim /etc/profile</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">export AMOEBA_HOME=/opt/amoeba</div><div class="line">export PATH=$PATH:$AMOEBA_HOME/bin</div></pre></td></tr></table></figure>
+<p>若启动报错：The stack size specified is too small, Specify at least 228k<br>通过属性文件修改JVM参数</p>
+<blockquote>
+<h1 id="vim-jvm-properties"><a href="#vim-jvm-properties" class="headerlink" title="vim jvm.properties"></a>vim jvm.properties</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">JVM_OPTIONS=&quot;-server -Xms256m -Xmx1024m -Xss196k -XX:PermSize=16m -XX:MaxPermSize=96m&quot;</div><div class="line">修改为：</div><div class="line">JVM_OPTIONS=&quot;-server -Xms1024m -Xmx1024m -Xss256k -XX:PermSize=16m -XX:MaxPermSize=96m&quot;</div></pre></td></tr></table></figure>
+<h2 id="二．配置Amoeba"><a href="#二．配置Amoeba" class="headerlink" title="二．配置Amoeba"></a>二．配置Amoeba</h2><p>按照<a href="http://blog.csdn.net/tshangshi/article/details/52799934，先完成mysql的主从备份部署" target="_blank" rel="external">http://blog.csdn.net/tshangshi/article/details/52799934，先完成mysql的主从备份部署</a></p>
+<p>1.首先数据库需要拥有一个可远程登陆的用户<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">mysql&gt; grant all privileges on *.* to amoeba@&apos;%&apos; identified by &apos;1234&apos;;</div><div class="line">mysql&gt; flush privlieges;</div></pre></td></tr></table></figure></p>
+<p>2.修改dbServers.xml配置文件</p>
+<blockquote>
+<h1 id="vim-conf-dbServers-xml"><a href="#vim-conf-dbServers-xml" class="headerlink" title="vim conf/dbServers.xml"></a>vim conf/dbServers.xml</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;gbk&quot;?&gt;</div><div class="line"></div><div class="line">&lt;!DOCTYPE amoeba:dbServers SYSTEM &quot;dbserver.dtd&quot;&gt;</div><div class="line">&lt;amoeba:dbServers xmlns:amoeba=&quot;http://amoeba.meidusa.com/&quot;&gt;</div><div class="line">    &lt;dbServer name=&quot;abstractServer&quot; abstractive=&quot;true&quot;&gt;</div><div class="line">        &lt;factoryConfig class=&quot;com.meidusa.amoeba.mysql.net.MysqlServerConnectionFactory&quot;&gt;</div><div class="line">            &lt;property name=&quot;connectionManager&quot;&gt;$&#123;defaultManager&#125;&lt;/property&gt;</div><div class="line">            &lt;property name=&quot;sendBufferSize&quot;&gt;64&lt;/property&gt;</div><div class="line">            &lt;property name=&quot;receiveBufferSize&quot;&gt;128&lt;/property&gt;</div><div class="line"></div><div class="line">            &lt;!-- mysql port --&gt;</div><div class="line">            &lt;property name=&quot;port&quot;&gt;3306&lt;/property&gt;</div><div class="line"></div><div class="line">            &lt;!-- mysql schema --&gt;</div><div class="line">            &lt;property name=&quot;schema&quot;&gt;ylyg&lt;/property&gt;</div><div class="line"></div><div class="line">            &lt;!-- mysql user  远程用户和密码--&gt;</div><div class="line">            &lt;property name=&quot;user&quot;&gt;amoeba&lt;/property&gt;</div><div class="line">            &lt;property name=&quot;password&quot;&gt;1234&lt;/property&gt;</div><div class="line">        &lt;/factoryConfig&gt;</div><div class="line"></div><div class="line">        &lt;poolConfig class=&quot;com.meidusa.toolkit.common.poolable.PoolableObjectPool&quot;&gt;</div><div class="line">            &lt;property name=&quot;maxActive&quot;&gt;200&lt;/property&gt;</div><div class="line">            &lt;property name=&quot;maxIdle&quot;&gt;200&lt;/property&gt;</div><div class="line">            &lt;property name=&quot;minIdle&quot;&gt;10&lt;/property&gt;</div><div class="line">            &lt;property name=&quot;minEvictableIdleTimeMillis&quot;&gt;600000&lt;/property&gt;</div><div class="line">            &lt;property name=&quot;timeBetweenEvictionRunsMillis&quot;&gt;600000&lt;/property&gt;</div><div class="line">            &lt;property name=&quot;testOnBorrow&quot;&gt;true&lt;/property&gt;</div><div class="line">            &lt;property name=&quot;testOnReturn&quot;&gt;true&lt;/property&gt;</div><div class="line">            &lt;property name=&quot;testWhileIdle&quot;&gt;true&lt;/property&gt;</div><div class="line">        &lt;/poolConfig&gt;</div><div class="line">    &lt;/dbServer&gt;</div><div class="line">&lt;!-- 主库master--&gt;</div><div class="line">    &lt;dbServer name=&quot;master&quot;  parent=&quot;abstractServer&quot;&gt;</div><div class="line">        &lt;factoryConfig&gt;</div><div class="line">            &lt;!-- mysql ip --&gt;</div><div class="line">            &lt;property name=&quot;ipAddress&quot;&gt;127.0.0.1&lt;/property&gt;</div><div class="line">        &lt;/factoryConfig&gt;</div><div class="line">    &lt;/dbServer&gt;</div><div class="line">&lt;!-- 从库slave--&gt;</div><div class="line">    &lt;dbServer name=&quot;slave&quot;  parent=&quot;abstractServer&quot;&gt;</div><div class="line">        &lt;factoryConfig&gt;</div><div class="line">            &lt;!-- mysql ip --&gt;</div><div class="line">            &lt;property name=&quot;ipAddress&quot;&gt;192.168.44.139&lt;/property&gt;</div><div class="line">        &lt;/factoryConfig&gt;</div><div class="line">    &lt;/dbServer&gt;</div><div class="line"> &lt;!--slave从库池.multiPool,如果多个slave则在poolNames里增加，以，隔开--&gt;</div><div class="line">    &lt;dbServer name=&quot;multiPool&quot; virtual=&quot;true&quot;&gt;</div><div class="line">        &lt;poolConfig class=&quot;com.meidusa.amoeba.server.MultipleServerPool&quot;&gt;</div><div class="line">            &lt;!-- Load balancing strategy: 1=ROUNDROBIN , 2=WEIGHTBASED , 3=HA--&gt;</div><div class="line">            &lt;property name=&quot;loadbalance&quot;&gt;1&lt;/property&gt;</div><div class="line"></div><div class="line">            &lt;!-- Separated by commas,such as: server1,server2,server1 --&gt;</div><div class="line">            &lt;property name=&quot;poolNames&quot;&gt;slave&lt;/property&gt;</div><div class="line">        &lt;/poolConfig&gt;</div><div class="line">    &lt;/dbServer&gt;</div><div class="line">&lt;/amoeba:dbServers&gt;</div></pre></td></tr></table></figure>
+<p>3.配置amoeba.xml主配置文件</p>
+<blockquote>
+<h1 id="vim-conf-amoeba-xml"><a href="#vim-conf-amoeba-xml" class="headerlink" title="vim conf/amoeba.xml"></a>vim conf/amoeba.xml</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version=&quot;1.0&quot; encoding=&quot;gbk&quot;?&gt;</div><div class="line"></div><div class="line">&lt;!DOCTYPE amoeba:configuration SYSTEM &quot;amoeba.dtd&quot;&gt;</div><div class="line">&lt;amoeba:configuration xmlns:amoeba=&quot;http://amoeba.meidusa.com/&quot;&gt;</div><div class="line">    &lt;proxy&gt;</div><div class="line">        &lt;!-- service class must implements com.meidusa.amoeba.service.Service --&gt;</div><div class="line">        &lt;service name=&quot;Amoeba for Mysql&quot; class=&quot;com.meidusa.amoeba.mysql.server.MySQLService&quot;&gt;</div><div class="line">            &lt;!-- port --&gt;</div><div class="line">            &lt;property name=&quot;port&quot;&gt;8066&lt;/property&gt;</div><div class="line"></div><div class="line">            &lt;!-- bind ipAddress 对外提供程序访问的IP地址，也就是amoeba机器对外访问的IP地址 --&gt;</div><div class="line">            &lt;!-- </div><div class="line">            &lt;property name=&quot;ipAddress&quot;&gt;127.0.0.1&lt;/property&gt;</div><div class="line">             --&gt;</div><div class="line"></div><div class="line">            &lt;property name=&quot;connectionFactory&quot;&gt;</div><div class="line">                &lt;bean class=&quot;com.meidusa.amoeba.mysql.net.MysqlClientConnectionFactory&quot;&gt;</div><div class="line">                    &lt;property name=&quot;sendBufferSize&quot;&gt;128&lt;/property&gt;</div><div class="line">                    &lt;property name=&quot;receiveBufferSize&quot;&gt;64&lt;/property&gt;</div><div class="line">                &lt;/bean&gt;</div><div class="line">            &lt;/property&gt;</div><div class="line"></div><div class="line">            &lt;property name=&quot;authenticateProvider&quot;&gt;</div><div class="line">                &lt;bean class=&quot;com.meidusa.amoeba.mysql.server.MysqlClientAuthenticator&quot;&gt;</div><div class="line">&lt;!--这里的用户和密码为登入amoeba的用户密码，而不是主从数据库的 --&gt;</div><div class="line">                    &lt;property name=&quot;user&quot;&gt;test&lt;/property&gt;</div><div class="line">                    &lt;property name=&quot;password&quot;&gt;redhat&lt;/property&gt;</div><div class="line">                    &lt;property name=&quot;filter&quot;&gt;</div><div class="line">                        &lt;bean class=&quot;com.meidusa.toolkit.net.authenticate.server.IPAccessController&quot;&gt;</div><div class="line">                            &lt;property name=&quot;ipFile&quot;&gt;$&#123;amoeba.home&#125;/conf/access_list.conf&lt;/property&gt;</div><div class="line">                        &lt;/bean&gt;</div><div class="line">                    &lt;/property&gt;</div><div class="line">                &lt;/bean&gt;</div><div class="line">            &lt;/property&gt;</div><div class="line">        &lt;/service&gt;</div><div class="line"></div><div class="line">        &lt;runtime class=&quot;com.meidusa.amoeba.mysql.context.MysqlRuntimeContext&quot;&gt;</div><div class="line"></div><div class="line">            &lt;!-- proxy server client process thread size --&gt;</div><div class="line">            &lt;property name=&quot;executeThreadSize&quot;&gt;128&lt;/property&gt;</div><div class="line"></div><div class="line">            &lt;!-- per connection cache prepared statement size  --&gt;</div><div class="line">            &lt;property name=&quot;statementCacheSize&quot;&gt;500&lt;/property&gt;</div><div class="line"></div><div class="line">            &lt;!-- default charset --&gt;</div><div class="line">            &lt;property name=&quot;serverCharset&quot;&gt;utf8&lt;/property&gt;</div><div class="line"></div><div class="line">            &lt;!-- query timeout( default: 60 second , TimeUnit:second) --&gt;</div><div class="line">            &lt;property name=&quot;queryTimeout&quot;&gt;60&lt;/property&gt;</div><div class="line">        &lt;/runtime&gt;</div><div class="line"></div><div class="line">    &lt;/proxy&gt;</div><div class="line"></div><div class="line">    &lt;!-- </div><div class="line">        Each ConnectionManager will start as thread</div><div class="line">        manager responsible for the Connection IO read , Death Detection</div><div class="line">    --&gt;</div><div class="line">    &lt;connectionManagerList&gt;</div><div class="line">        &lt;connectionManager name=&quot;defaultManager&quot; class=&quot;com.meidusa.toolkit.net.MultiConnectionManagerWrapper&quot;&gt;</div><div class="line">            &lt;property name=&quot;subManagerClassName&quot;&gt;com.meidusa.toolkit.net.AuthingableConnectionManager&lt;/property&gt;</div><div class="line">        &lt;/connectionManager&gt;</div><div class="line">    &lt;/connectionManagerList&gt;</div><div class="line"></div><div class="line">        &lt;!-- default using file loader --&gt;</div><div class="line">    &lt;dbServerLoader class=&quot;com.meidusa.amoeba.context.DBServerConfigFileLoader&quot;&gt;</div><div class="line">        &lt;property name=&quot;configFile&quot;&gt;$&#123;amoeba.home&#125;/conf/dbServers.xml&lt;/property&gt;</div><div class="line">    &lt;/dbServerLoader&gt;</div><div class="line"></div><div class="line">    &lt;queryRouter class=&quot;com.meidusa.amoeba.mysql.parser.MysqlQueryRouter&quot;&gt;</div><div class="line">        &lt;property name=&quot;ruleLoader&quot;&gt;</div><div class="line">            &lt;bean class=&quot;com.meidusa.amoeba.route.TableRuleFileLoader&quot;&gt;</div><div class="line">                &lt;property name=&quot;ruleFile&quot;&gt;$&#123;amoeba.home&#125;/conf/rule.xml&lt;/property&gt;</div><div class="line">&lt;!--设置读写--&gt;</div><div class="line">&lt;property name=&quot;functionFile&quot;&gt;$&#123;amoeba.home&#125;/conf/ruleFunctionMap.xml&lt;/property&gt;</div><div class="line">            &lt;/bean&gt;</div><div class="line">        &lt;/property&gt;</div><div class="line">        &lt;property name=&quot;sqlFunctionFile&quot;&gt;$&#123;amoeba.home&#125;/conf/functionMap.xml&lt;/property&gt;</div><div class="line">        &lt;property name=&quot;LRUMapSize&quot;&gt;1500&lt;/property&gt;</div><div class="line">        &lt;property name=&quot;defaultPool&quot;&gt;master&lt;/property&gt;</div><div class="line">&lt;!--设置主数据库为写数据库--&gt;</div><div class="line">        &lt;property name=&quot;writePool&quot;&gt;master&lt;/property&gt;</div><div class="line">&lt;!--设置从数据库池为读数据库--&gt;</div><div class="line">        &lt;property name=&quot;readPool&quot;&gt;multiPool&lt;/property&gt;</div><div class="line">        &lt;property name=&quot;needParse&quot;&gt;true&lt;/property&gt;</div><div class="line">    &lt;/queryRouter&gt;</div><div class="line">&lt;/amoeba:configuration&gt;</div></pre></td></tr></table></figure>
+<p>4.启动amoeba</p>
+<blockquote>
+<h1 id="launcher-amp"><a href="#launcher-amp" class="headerlink" title="launcher &amp;"></a>launcher &amp;</h1></blockquote>
+<p>登入amoeba</p>
+<blockquote>
+<h1 id="mysql-utest-predhat-h127-0-0-1-P8066"><a href="#mysql-utest-predhat-h127-0-0-1-P8066" class="headerlink" title="mysql -utest -predhat -h127.0.0.1 -P8066"></a>mysql -utest -predhat -h127.0.0.1 -P8066</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line">Welcome to the MySQL monitor.  Commands end with ; or \g.</div><div class="line">Your MySQL connection id is 2139479565</div><div class="line">Server version: 5.1.45-mysql-amoeba-proxy-3.0.4-BETA Source distribution</div><div class="line"></div><div class="line">Copyright (c) 2000, 2013, Oracle and/or its affiliates. All rights reserved.</div><div class="line"></div><div class="line">Oracle is a registered trademark of Oracle Corporation and/or its</div><div class="line">affiliates. Other names may be trademarks of their respective</div><div class="line">owners.</div><div class="line"></div><div class="line">Type &apos;help;&apos; or &apos;\h&apos; for help. Type &apos;\c&apos; to clear the current input statement.</div><div class="line">mysql&gt; show tables;</div><div class="line">mysql&gt; create table user(id int(5),name char(10));</div><div class="line">在主从数据库均正常打开的情况下</div><div class="line">mysql&gt; insert into user values (1,&apos;zhanglong&apos;);</div><div class="line">mysql&gt; select * from user;</div><div class="line">+------+-----------+</div><div class="line">| id   | name      |</div><div class="line">+------+-----------+</div><div class="line">|    1 | zhanglong |</div><div class="line">+------+-----------+</div><div class="line">1 row in set (0.01 sec)</div><div class="line">在从服务器关闭（stop slave）的情况下</div><div class="line">mysql&gt; insert into user values (2,&apos;zhangfei&apos;);</div><div class="line">mysql&gt; select * from user；</div><div class="line">+------+-----------+</div><div class="line">| id   | name      |</div><div class="line">+------+-----------+</div><div class="line">|    1 | zhanglong |</div><div class="line">+------+-----------+</div><div class="line">1 row in set (0.02 sec)</div><div class="line">可以发现没有更新，再在主从数据库分别查看</div></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/12/mysql主从备份/" rel="next" title="mysql主从备份">
+                <i class="fa fa-chevron-left"></i> mysql主从备份
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/17/mysql双机热备/" rel="prev" title="mysql双机热备">
+                mysql双机热备 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/10/12/Amoeba实现mysql读写分离/"
+           data-title="Amoeba实现mysql读写分离" data-url="http://yoursite.com/2016/10/12/Amoeba实现mysql读写分离/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://olno6tnmz.bkt.clouddn.com/1.JPG"
+               alt="little sky" />
+          <p class="site-author-name" itemprop="name">little sky</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/tytredhat" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/litsky" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://blog.csdn.net/tshangshi" target="_blank" title="CSDN">
+                  
+                    <i class="fa fa-fw fa-book"></i>
+                  
+                  CSDN
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#环境"><span class="nav-number">1.</span> <span class="nav-text">环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一．安装Amoeba"><span class="nav-number">2.</span> <span class="nav-text">一．安装Amoeba</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#tar-xzvf-amoeba-mysql-3-0-5-RC-distribution-zip"><span class="nav-number"></span> <span class="nav-text">tar -xzvf amoeba-mysql-3.0.5-RC-distribution.zip</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mv-amoeba-mysql-3-0-5-RC-opt-amoeba"><span class="nav-number"></span> <span class="nav-text">mv amoeba-mysql-3.0.5-RC /opt/amoeba</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-etc-profile"><span class="nav-number"></span> <span class="nav-text">vim /etc/profile</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-jvm-properties"><span class="nav-number"></span> <span class="nav-text">vim jvm.properties</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#二．配置Amoeba"><span class="nav-number">1.</span> <span class="nav-text">二．配置Amoeba</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-conf-dbServers-xml"><span class="nav-number"></span> <span class="nav-text">vim conf/dbServers.xml</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-conf-amoeba-xml"><span class="nav-number"></span> <span class="nav-text">vim conf/amoeba.xml</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#launcher-amp"><span class="nav-number"></span> <span class="nav-text">launcher &</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql-utest-predhat-h127-0-0-1-P8066"><span class="nav-number"></span> <span class="nav-text">mysql -utest -predhat -h127.0.0.1 -P8066</span></a></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">little sky</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"ltsky"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

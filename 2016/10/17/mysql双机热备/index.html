@@ -1,0 +1,778 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.png?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="通常，为了简化逻辑，其中一个Master会设置为只读，正常只通过另外一个Master进行读写。 若要两边都写，为了避免自增id冲突，一般会设置奇偶错开，即一台的自增ID均为奇数，另一台均为偶数。
+保持两个数据库的状态自动同步。对任何一个数据库的操作都自动应用到另外一个数据库，始终保持两个数据库数据一致。 这样做的好处是： 1. 可以做灾备，其中一个坏了可以切换到另一个。 2. 可以做负载均衡，可以">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mysql双机热备">
+<meta property="og:url" content="http://yoursite.com/2016/10/17/mysql双机热备/index.html">
+<meta property="og:site_name" content="lSky's blog">
+<meta property="og:description" content="通常，为了简化逻辑，其中一个Master会设置为只读，正常只通过另外一个Master进行读写。 若要两边都写，为了避免自增id冲突，一般会设置奇偶错开，即一台的自增ID均为奇数，另一台均为偶数。
+保持两个数据库的状态自动同步。对任何一个数据库的操作都自动应用到另外一个数据库，始终保持两个数据库数据一致。 这样做的好处是： 1. 可以做灾备，其中一个坏了可以切换到另一个。 2. 可以做负载均衡，可以">
+<meta property="og:updated_time" content="2017-02-25T09:07:42.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mysql双机热备">
+<meta name="twitter:description" content="通常，为了简化逻辑，其中一个Master会设置为只读，正常只通过另外一个Master进行读写。 若要两边都写，为了避免自增id冲突，一般会设置奇偶错开，即一台的自增ID均为奇数，另一台均为偶数。
+保持两个数据库的状态自动同步。对任何一个数据库的操作都自动应用到另外一个数据库，始终保持两个数据库数据一致。 这样做的好处是： 1. 可以做灾备，其中一个坏了可以切换到另一个。 2. 可以做负载均衡，可以">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/10/17/mysql双机热备/"/>
+
+
+
+
+
+  <title> mysql双机热备 | lSky's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lSky's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/10/17/mysql双机热备/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="little sky">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="http://olno6tnmz.bkt.clouddn.com/1.JPG">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="lSky's blog">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="lSky's blog" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                mysql双机热备
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-10-17T19:31:29+08:00">
+                2016-10-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/17/mysql双机热备/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/17/mysql双机热备/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>通常，为了简化逻辑，其中一个Master会设置为只读，正常只通过另外一个Master进行读写。 若要两边都写，为了避免自增id冲突，一般会设置奇偶错开，即一台的自增ID均为奇数，另一台均为偶数。</p>
+<p>保持两个数据库的状态自动同步。对任何一个数据库的操作都自动应用到另外一个数据库，始终保持两个数据库数据一致。 这样做的好处是： 1. 可以做灾备，其中一个坏了可以切换到另一个。 2. 可以做负载均衡，可以将请求分摊到其中任何一台上，提高网站吞吐量。  对于异地热备，尤其适合灾备。<br><a id="more"></a></p>
+<h2 id="一．主-主复制"><a href="#一．主-主复制" class="headerlink" title="一．主-主复制"></a>一．主-主复制</h2><p>Master1 ip：192.168.44.137<br>Master2 ip：192.168.44.139<br>Virtual ip：192.168.44.188<br>原理：简单的说就是把 一个服务器上执行过的sql语句在别的服务器上也重复执行一遍， 这样只要两个数据库的初态是一样的，那么它们就能一直同步。其实只要做互为主从备份</p>
+<p>1.Master1</p>
+<blockquote>
+<h1 id="vim-etc-my-cnf"><a href="#vim-etc-my-cnf" class="headerlink" title="vim /etc/my.cnf"></a>vim /etc/my.cnf</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[mysqld]</div><div class="line">log-bin=/tmp/binlog</div><div class="line">relay-log=/tmp/mysql-relay-bin  #配置中继日志</div><div class="line">server-id=1</div><div class="line">replicate-wild-ignore-table=mysql.%  #不对这些数据表进行镜像处理</div><div class="line">replicate-wild-ignore-table=test.%</div><div class="line">replicate-wild-ignore-table=information_schema.%</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">mysql&gt; change master to </div><div class="line">    -&gt; master_host=&apos;192.168.44.139&apos;,</div><div class="line">    -&gt; master_user=&apos;salveuser&apos;,</div><div class="line">    -&gt; master_password=&apos;redhat&apos;,</div><div class="line">    -&gt; master_log_file=&apos;binlog.000001&apos;,</div><div class="line">-&gt; master_log_pos=328；</div><div class="line">mysql&gt; slave start;</div></pre></td></tr></table></figure>
+<p>2.Master2</p>
+<blockquote>
+<h1 id="vim-etc-my-cnf-1"><a href="#vim-etc-my-cnf-1" class="headerlink" title="vim /etc/my.cnf"></a>vim /etc/my.cnf</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">[mysqld]</div><div class="line">server-id=2</div><div class="line">log-bin=/tmp/binlog</div><div class="line">relay_log=/tmp/mysql-relay-bin</div><div class="line">replicate-wild-ignore-table=mysql.%</div><div class="line">replicate-wild-ignore-table=test.%</div><div class="line">replicate-wild-ignore-table=information_schema.%</div></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">mysql&gt; change master to </div><div class="line">    -&gt; master_host=&apos;192.168.44.137&apos;,</div><div class="line">    -&gt; master_user=&apos;salveuser&apos;,</div><div class="line">    -&gt; master_password=&apos;redhat&apos;,</div><div class="line">    -&gt; master_log_file=&apos;binlog.000001&apos;,</div><div class="line">-&gt; master_log_pos=106；</div><div class="line">mysql&gt; slave start;</div></pre></td></tr></table></figure>
+<h2 id="二．Keepalive安装部署（实现MySQL双主高可用，故障转移）"><a href="#二．Keepalive安装部署（实现MySQL双主高可用，故障转移）" class="headerlink" title="二．Keepalive安装部署（实现MySQL双主高可用，故障转移）"></a>二．Keepalive安装部署（实现MySQL双主高可用，故障转移）</h2><blockquote>
+<h1 id="yum-install-y-gcc-make-openssl-openssl-devel-ipvsadm-perl-DBI-perl-DBD-MySQL"><a href="#yum-install-y-gcc-make-openssl-openssl-devel-ipvsadm-perl-DBI-perl-DBD-MySQL" class="headerlink" title="yum install -y gcc make openssl openssl-devel ipvsadm perl-DBI perl-DBD-MySQL"></a>yum install -y gcc make openssl openssl-devel ipvsadm perl-DBI perl-DBD-MySQL</h1><h1 id="wget-http-www-keepalived-org-software-keepalived-1-2-12-tar-gz"><a href="#wget-http-www-keepalived-org-software-keepalived-1-2-12-tar-gz" class="headerlink" title="wget http://www.keepalived.org/software/keepalived-1.2.12.tar.gz"></a>wget <a href="http://www.keepalived.org/software/keepalived-1.2.12.tar.gz" target="_blank" rel="external">http://www.keepalived.org/software/keepalived-1.2.12.tar.gz</a></h1><h1 id="tar-xzvf-keepalived-1-2-12-tar-gz"><a href="#tar-xzvf-keepalived-1-2-12-tar-gz" class="headerlink" title="tar -xzvf keepalived-1.2.12.tar.gz"></a>tar -xzvf keepalived-1.2.12.tar.gz</h1><h1 id="cd-keepalived-1-2-12"><a href="#cd-keepalived-1-2-12" class="headerlink" title="cd keepalived-1.2.12"></a>cd keepalived-1.2.12</h1><h1 id="configure-–prefix-usr-local-keepalived"><a href="#configure-–prefix-usr-local-keepalived" class="headerlink" title="./configure –prefix=/usr/local/keepalived"></a>./configure –prefix=/usr/local/keepalived</h1><h1 id="make-amp-amp-make-install"><a href="#make-amp-amp-make-install" class="headerlink" title="make &amp;&amp; make install"></a>make &amp;&amp; make install</h1><h1 id="cp-usr-local-keepalived-sbin-keepalived-usr-sbin"><a href="#cp-usr-local-keepalived-sbin-keepalived-usr-sbin" class="headerlink" title="cp /usr/local/keepalived/sbin/keepalived /usr/sbin/"></a>cp /usr/local/keepalived/sbin/keepalived /usr/sbin/</h1><h1 id="cp-usr-local-keepalived-etc-sysconfig-keepalived-etc-sysconfig"><a href="#cp-usr-local-keepalived-etc-sysconfig-keepalived-etc-sysconfig" class="headerlink" title="cp /usr/local/keepalived/etc/sysconfig/keepalived /etc/sysconfig/"></a>cp /usr/local/keepalived/etc/sysconfig/keepalived /etc/sysconfig/</h1><h1 id="cp-usr-local-keepalived-etc-rc-d-init-d-keepalived-etc-init-d"><a href="#cp-usr-local-keepalived-etc-rc-d-init-d-keepalived-etc-init-d" class="headerlink" title="cp /usr/local/keepalived/etc/rc.d/init.d/keepalived /etc/init.d/"></a>cp /usr/local/keepalived/etc/rc.d/init.d/keepalived /etc/init.d/</h1><h1 id="cp-rf-usr-local-keepalived-etc-keepalived-etc"><a href="#cp-rf-usr-local-keepalived-etc-keepalived-etc" class="headerlink" title="cp -rf /usr/local/keepalived/etc/keepalived/ /etc/"></a>cp -rf /usr/local/keepalived/etc/keepalived/ /etc/</h1></blockquote>
+<p>Slave1</p>
+<blockquote>
+<h1 id="vim-etc-keepalived-keepalived-conf"><a href="#vim-etc-keepalived-keepalived-conf" class="headerlink" title="vim /etc/keepalived/keepalived.conf"></a>vim /etc/keepalived/keepalived.conf</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">global_defs &#123;					#全局配置标识</div><div class="line">   notification_email &#123;			#邮箱地址，切换操作时会的发邮件到配置上的邮箱</div><div class="line">        root@localhost</div><div class="line">   &#125;</div><div class="line">   notification_email_from www.nginx2.com	#邮件源地址</div><div class="line">   smtp_server 127.0.0.1					#smtp服务器地址</div><div class="line">   smtp_connect_timeout 30				#连接smtp超时时间</div><div class="line">   router_id MySQL_HA					#设置VRID</div><div class="line">&#125;</div><div class="line"></div><div class="line">vrrp_script check_mysqld &#123;					#定义一个名称为check_mysqld的检查脚本  </div><div class="line">        script &quot;/etc/keepalived/check_slave.pl 127.0.0.1&quot;</div><div class="line">        interval 2							#运行间隔</div><div class="line">        weight 21</div><div class="line">&#125;</div><div class="line"></div><div class="line">vrrp_instance VI_1 &#123;</div><div class="line">    state BACKUP			</div><div class="line">    interface eth0						#绑定虚拟IP的网络接口 </div><div class="line">    virtual_router_id 51				#VRRP组名，两个节点的设置必须一样，以指明各个节点属于同一VRRP组</div><div class="line">    priority 100						#主节点的优先级</div><div class="line">advert_int 2						# 组播信息发送间隔，两个节点设置必须一样</div><div class="line">nopreempt						#不抢占模式,只在主master上设置</div><div class="line">    authentication &#123;					#设置验证信息，两个节点必须一致  </div><div class="line">        auth_type PASS</div><div class="line">        auth_pass 1111</div><div class="line">    &#125;</div><div class="line">    virtual_ipaddress &#123;					 #指定虚拟IP, 两个节点设置必须一样 </div><div class="line">        192.168.44.188</div><div class="line">    &#125;</div><div class="line">    track_script &#123;						#使用上面定义的检测脚本</div><div class="line">        check_mysqld</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>在slave2中<br>修改priority为90，并去掉nopreempt使之抢占</p>
+<p>检查的pl脚本（也可为shell脚本）</p>
+<blockquote>
+<h1 id="vim-check-slave-pl"><a href="#vim-check-slave-pl" class="headerlink" title="vim check_slave.pl"></a>vim check_slave.pl</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/perl -w</div><div class="line">use DBI;</div><div class="line">use DBD::mysql;</div><div class="line"></div><div class="line"># CONFIG VARIABLES</div><div class="line">$SBM = 120;</div><div class="line">$db = &quot;ylyg&quot;;</div><div class="line">$host = $ARGV[0];</div><div class="line">$port = 3306;</div><div class="line">$user = &quot;root&quot;;</div><div class="line">$pw = &quot;redhat&quot;;</div><div class="line"></div><div class="line"># SQL query</div><div class="line">$query = &quot;show slave status&quot;;</div><div class="line"></div><div class="line">$dbh = DBI-&gt;connect(&quot;DBI:mysql:$db:$host:$port&quot;,$user,$pw,&#123; RaiseError =&gt; 0,PrintError =&gt; 0 &#125;);</div><div class="line"></div><div class="line">if (!defined($dbh)) &#123;</div><div class="line">    exit 1;</div><div class="line">&#125;</div><div class="line"></div><div class="line">$sqlQuery = $dbh-&gt;prepare($query);</div><div class="line">$sqlQuery-&gt;execute;</div><div class="line"></div><div class="line">$Slave_IO_Running =  &quot;&quot;;</div><div class="line">$Slave_SQL_Running = &quot;&quot;;</div><div class="line">$Seconds_Behind_Master = &quot;&quot;;</div><div class="line"></div><div class="line">while (my $ref = $sqlQuery-&gt;fetchrow_hashref()) &#123;</div><div class="line">    $Slave_IO_Running = $ref-&gt;&#123;&apos;Slave_IO_Running&apos;&#125;;</div><div class="line">    $Slave_SQL_Running = $ref-&gt;&#123;&apos;Slave_SQL_Running&apos;&#125;;</div><div class="line">    $Seconds_Behind_Master = $ref-&gt;&#123;&apos;Seconds_Behind_Master&apos;&#125;;</div><div class="line">&#125;</div><div class="line"></div><div class="line">$sqlQuery-&gt;finish;</div><div class="line">$dbh-&gt;disconnect();</div><div class="line"></div><div class="line">if ( $Slave_IO_Running eq &quot;No&quot; || $Slave_SQL_Running eq &quot;No&quot; ) &#123;</div><div class="line">    exit 1;</div><div class="line">&#125; else &#123;</div><div class="line">    if ( $Seconds_Behind_Master &gt; $SBM ) &#123;</div><div class="line">        exit 1;</div><div class="line">    &#125; else &#123;</div><div class="line">        exit 0;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<h1 id="service-keepalived-start"><a href="#service-keepalived-start" class="headerlink" title="service keepalived start"></a>service keepalived start</h1></blockquote>
+<h2 id="三．测试"><a href="#三．测试" class="headerlink" title="三．测试"></a>三．测试</h2><p>1，以vip连接mysql</p>
+<blockquote>
+<h1 id="mysql-uamoeba-p1234-h192-168-44-188"><a href="#mysql-uamoeba-p1234-h192-168-44-188" class="headerlink" title="mysql -uamoeba -p1234 -h192.168.44.188"></a>mysql -uamoeba -p1234 -h192.168.44.188</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">mysql&gt; show global variables like &apos;server%&apos;;</div><div class="line">mysql&gt; show slave status\G;</div></pre></td></tr></table></figure>
+<p>2，在master1</p>
+<blockquote>
+<h1 id="ip-addr"><a href="#ip-addr" class="headerlink" title="ip addr"></a>ip addr</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 16436 qdisc noqueue state UNKNOWN </div><div class="line">    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</div><div class="line">    inet 127.0.0.1/8 scope host lo</div><div class="line">    inet6 ::1/128 scope host </div><div class="line">       valid_lft forever preferred_lft forever</div><div class="line">2: eth0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP qlen 1000</div><div class="line">    link/ether 00:0c:29:88:07:d5 brd ff:ff:ff:ff:ff:ff</div><div class="line">    inet 192.168.44.137/24 brd 192.168.44.255 scope global eth0</div><div class="line">    inet 192.168.44.188/32 scope global eth0</div><div class="line">    inet6 fe80::20c:29ff:fe88:7d5/64 scope link </div><div class="line">       valid_lft forever preferred_lft forever</div></pre></td></tr></table></figure>
+<p>故障模拟，上关闭slave，停止MySQL复制线程</p>
+<p>3，以vip连接mysql<br>会发现当停掉复制线程后，执行查询时连接中断了一次，马上再次连接上完成查询，显示的server_id已经变成2了，表示服务器已经切换了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">mysql&gt; show global variables like &apos;server%&apos;;</div><div class="line">ERROR 2013 (HY000): Lost connection to MySQL server during query</div><div class="line">mysql&gt; show global variables like &apos;server%&apos;;</div><div class="line">ERROR 2006 (HY000): MySQL server has gone away</div><div class="line">No connection. Trying to reconnect...</div><div class="line">Connection id:    351</div><div class="line">Current database: *** NONE ***</div><div class="line"></div><div class="line">+---------------+-------+</div><div class="line">| Variable_name | Value |</div><div class="line">+---------------+-------+</div><div class="line">| server_id     | 2     |</div><div class="line">+---------------+-------+</div><div class="line">1 row in set (0.12 sec)</div></pre></td></tr></table></figure></p>
+<p>Tips：在 双主（多主循环）互相备份。 因为每台数据库服务器都可能在同一个表中插入数据，如果表有一个自动增长的主键，那么就会在多服务器上出现主键冲突。  解决这个问题的办法就是让每个数据库的自增主键不连续。  上图说是， 我假设需要将来可能需要10台服务器做备份， 所以auto-increment-increment 设为10.   而 auto-increment-offset=1 表示这台服务器的序号。 从1开始， 不超过auto-increment-increment。这样做之后， 我在这台服务器上插入的第一个id就是 1， 第二行的id就是 11了， 而不是2，同理，在第二台服务器上插入的第一个id就是2， 第二行就是12。</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/12/Amoeba实现mysql读写分离/" rel="next" title="Amoeba实现mysql读写分离">
+                <i class="fa fa-chevron-left"></i> Amoeba实现mysql读写分离
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/31/Centos下JIRA破解安装/" rel="prev" title="Centos下JIRA破解安装">
+                Centos下JIRA破解安装 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/10/17/mysql双机热备/"
+           data-title="mysql双机热备" data-url="http://yoursite.com/2016/10/17/mysql双机热备/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://olno6tnmz.bkt.clouddn.com/1.JPG"
+               alt="little sky" />
+          <p class="site-author-name" itemprop="name">little sky</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/tytredhat" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/litsky" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://blog.csdn.net/tshangshi" target="_blank" title="CSDN">
+                  
+                    <i class="fa fa-fw fa-book"></i>
+                  
+                  CSDN
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一．主-主复制"><span class="nav-number">1.</span> <span class="nav-text">一．主-主复制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-etc-my-cnf"><span class="nav-number"></span> <span class="nav-text">vim /etc/my.cnf</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-etc-my-cnf-1"><span class="nav-number"></span> <span class="nav-text">vim /etc/my.cnf</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#二．Keepalive安装部署（实现MySQL双主高可用，故障转移）"><span class="nav-number">1.</span> <span class="nav-text">二．Keepalive安装部署（实现MySQL双主高可用，故障转移）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#yum-install-y-gcc-make-openssl-openssl-devel-ipvsadm-perl-DBI-perl-DBD-MySQL"><span class="nav-number"></span> <span class="nav-text">yum install -y gcc make openssl openssl-devel ipvsadm perl-DBI perl-DBD-MySQL</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#wget-http-www-keepalived-org-software-keepalived-1-2-12-tar-gz"><span class="nav-number"></span> <span class="nav-text">wget http://www.keepalived.org/software/keepalived-1.2.12.tar.gz</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#tar-xzvf-keepalived-1-2-12-tar-gz"><span class="nav-number"></span> <span class="nav-text">tar -xzvf keepalived-1.2.12.tar.gz</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cd-keepalived-1-2-12"><span class="nav-number"></span> <span class="nav-text">cd keepalived-1.2.12</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#configure-–prefix-usr-local-keepalived"><span class="nav-number"></span> <span class="nav-text">./configure –prefix=/usr/local/keepalived</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#make-amp-amp-make-install"><span class="nav-number"></span> <span class="nav-text">make && make install</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cp-usr-local-keepalived-sbin-keepalived-usr-sbin"><span class="nav-number"></span> <span class="nav-text">cp /usr/local/keepalived/sbin/keepalived /usr/sbin/</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cp-usr-local-keepalived-etc-sysconfig-keepalived-etc-sysconfig"><span class="nav-number"></span> <span class="nav-text">cp /usr/local/keepalived/etc/sysconfig/keepalived /etc/sysconfig/</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cp-usr-local-keepalived-etc-rc-d-init-d-keepalived-etc-init-d"><span class="nav-number"></span> <span class="nav-text">cp /usr/local/keepalived/etc/rc.d/init.d/keepalived /etc/init.d/</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cp-rf-usr-local-keepalived-etc-keepalived-etc"><span class="nav-number"></span> <span class="nav-text">cp -rf /usr/local/keepalived/etc/keepalived/ /etc/</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-etc-keepalived-keepalived-conf"><span class="nav-number"></span> <span class="nav-text">vim /etc/keepalived/keepalived.conf</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-check-slave-pl"><span class="nav-number"></span> <span class="nav-text">vim check_slave.pl</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#service-keepalived-start"><span class="nav-number"></span> <span class="nav-text">service keepalived start</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#三．测试"><span class="nav-number">1.</span> <span class="nav-text">三．测试</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql-uamoeba-p1234-h192-168-44-188"><span class="nav-number"></span> <span class="nav-text">mysql -uamoeba -p1234 -h192.168.44.188</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ip-addr"><span class="nav-number"></span> <span class="nav-text">ip addr</span></a></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">little sky</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"ltsky"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

@@ -1,0 +1,768 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.png?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="从MySQL 5.7.5开始需要Boost库，也就是因为这个库纠结了好久 )~^~(By the way，编译过程需要花的时间比较久，对内存和硬盘要求比较高环境 VM：内存3G，硬盘30G   系统：CentOS release 6.5">
+<meta property="og:type" content="article">
+<meta property="og:title" content="rpm包制作之-mysql-5.7.16">
+<meta property="og:url" content="http://yoursite.com/2016/12/14/rpm包制作-mysql-5.7.16/index.html">
+<meta property="og:site_name" content="lSky's blog">
+<meta property="og:description" content="从MySQL 5.7.5开始需要Boost库，也就是因为这个库纠结了好久 )~^~(By the way，编译过程需要花的时间比较久，对内存和硬盘要求比较高环境 VM：内存3G，硬盘30G   系统：CentOS release 6.5">
+<meta property="og:updated_time" content="2017-02-25T09:07:42.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="rpm包制作之-mysql-5.7.16">
+<meta name="twitter:description" content="从MySQL 5.7.5开始需要Boost库，也就是因为这个库纠结了好久 )~^~(By the way，编译过程需要花的时间比较久，对内存和硬盘要求比较高环境 VM：内存3G，硬盘30G   系统：CentOS release 6.5">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/12/14/rpm包制作-mysql-5.7.16/"/>
+
+
+
+
+
+  <title> rpm包制作之-mysql-5.7.16 | lSky's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lSky's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/12/14/rpm包制作-mysql-5.7.16/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="little sky">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="http://olno6tnmz.bkt.clouddn.com/1.JPG">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="lSky's blog">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="lSky's blog" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                rpm包制作之-mysql-5.7.16
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-12-14T21:12:12+08:00">
+                2016-12-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/other/" itemprop="url" rel="index">
+                    <span itemprop="name">other</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/12/14/rpm包制作-mysql-5.7.16/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/12/14/rpm包制作-mysql-5.7.16/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>从MySQL 5.7.5开始需要Boost库，也就是因为这个库纠结了好久 )~^~(<br>By the way，编译过程需要花的时间比较久，对内存和硬盘要求比较高<br>环境 VM：内存3G，硬盘30G   系统：CentOS release 6.5<br><a id="more"></a></p>
+<h2 id="mysql-5-7-16源码编译安装"><a href="#mysql-5-7-16源码编译安装" class="headerlink" title="mysql-5.7.16源码编译安装"></a>mysql-5.7.16源码编译安装</h2><h3 id="相关依赖安装"><a href="#相关依赖安装" class="headerlink" title="相关依赖安装"></a>相关依赖安装</h3><blockquote>
+<h1 id="yum-y-install-make-gcc-gcc-c-cmake-bison-devel-ncurses-ncurses-devel-perl-JSON-perl-devel-perl-Time-HiRes"><a href="#yum-y-install-make-gcc-gcc-c-cmake-bison-devel-ncurses-ncurses-devel-perl-JSON-perl-devel-perl-Time-HiRes" class="headerlink" title="yum -y install make gcc gcc-c++ cmake bison-devel ncurses ncurses-devel perl-JSON perl-devel perl-Time-HiRes"></a>yum -y install make gcc gcc-c++ cmake bison-devel ncurses ncurses-devel perl-JSON perl-devel perl-Time-HiRes</h1><h1 id="ntpdate-cn-pool-ntp-org"><a href="#ntpdate-cn-pool-ntp-org" class="headerlink" title="ntpdate cn.pool.ntp.org"></a>ntpdate cn.pool.ntp.org</h1><h1 id="useradd-M-s-sbin-nologin-mysql"><a href="#useradd-M-s-sbin-nologin-mysql" class="headerlink" title="useradd -M -s /sbin/nologin mysql"></a>useradd -M -s /sbin/nologin mysql</h1></blockquote>
+<p>从MySQL 5.7.5开始Boost库是必需<br>Boost库编译安装</p>
+<blockquote>
+<p> ./bootstrap.sh<br> ./b2 install threading=multi link=shared</p>
+</blockquote>
+<h3 id="Mysql编译安装"><a href="#Mysql编译安装" class="headerlink" title="Mysql编译安装"></a>Mysql编译安装</h3><p>编译<br>cmake参数: <a href="http://dev.mysql.com/doc/refman/5.7/en/source-configuration-options.html" target="_blank" rel="external">http://dev.mysql.com/doc/refman/5.7/en/source-configuration-options.html</a></p>
+<blockquote>
+<h1 id="cmake-DCMAKE-INSTALL-PREFIX-usr-local-mysql-DMYSQL-DATADIR-usr-local-mysql-data-DSYSCONFDIR-etc-DWIT"><a href="#cmake-DCMAKE-INSTALL-PREFIX-usr-local-mysql-DMYSQL-DATADIR-usr-local-mysql-data-DSYSCONFDIR-etc-DWIT" class="headerlink" title="cmake -DCMAKE_INSTALL_PREFIX=/usr/local/mysql -DMYSQL_DATADIR=/usr/local/mysql/data -DSYSCONFDIR=/etc -DWIT"></a>cmake -DCMAKE_INSTALL_PREFIX=/usr/local/mysql -DMYSQL_DATADIR=/usr/local/mysql/data -DSYSCONFDIR=/etc -DWIT</h1></blockquote>
+<p>H_MYISAM_STORAGE_ENGINE=1 -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_MEMORY_STORAGE_ENGINE=1 -DWITH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_BLACKHOLE_STORAGE_ENGINE=1 -DWITH_PERFSCHEMA_STORAGE_ENGINE=1 -DEXTRA_CHARSETS=all -DENABLED_LOCAL_INFILE=1 -DEXTRA_CHARSETS=all -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DWITH_READLINE=1 -DMYSQL_USER=mysql</p>
+<blockquote>
+<h1 id="make-j3-amp-amp-make-install"><a href="#make-j3-amp-amp-make-install" class="headerlink" title="make -j3 &amp;&amp; make install"></a>make -j3 &amp;&amp; make install</h1><h1 id="mkdir-var-lib-mysql"><a href="#mkdir-var-lib-mysql" class="headerlink" title="mkdir /var/lib/mysql/"></a>mkdir /var/lib/mysql/</h1><h1 id="chown-R-mysql-mysql-var-lib-mysql"><a href="#chown-R-mysql-mysql-var-lib-mysql" class="headerlink" title="chown -R mysql:mysql /var/lib/mysql/"></a>chown -R mysql:mysql /var/lib/mysql/</h1><h1 id="mkdir-p-usr-local-mysql-data"><a href="#mkdir-p-usr-local-mysql-data" class="headerlink" title="mkdir -p /usr/local/mysql/data"></a>mkdir -p /usr/local/mysql/data</h1><h1 id="chown-R-mysql-mysql-usr-local-mysql-data"><a href="#chown-R-mysql-mysql-usr-local-mysql-data" class="headerlink" title="chown -R mysql:mysql /usr/local/mysql/data"></a>chown -R mysql:mysql /usr/local/mysql/data</h1></blockquote>
+<p>配置文件修改</p>
+<blockquote>
+<h1 id="vim-etc-my-cnf"><a href="#vim-etc-my-cnf" class="headerlink" title="vim /etc/my.cnf"></a>vim /etc/my.cnf</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">[client]</div><div class="line">default-character-set=utf8</div><div class="line"></div><div class="line">[mysqld]</div><div class="line">datadir=/usr/local/mysql/data</div><div class="line">user=mysql</div><div class="line"># Disabling symbolic-links is recommended to prevent assorted security risks</div><div class="line">symbolic-links=0</div><div class="line">character-set-server=utf8</div><div class="line">collation-server=utf8_general_ci</div><div class="line">#server-id=1</div><div class="line">#log-bin=/tmp/binlog</div><div class="line">#log-bin-index=/tmp/binlog.index</div><div class="line"></div><div class="line">[mysqld_safe]</div><div class="line">log-error=/var/log/mysqld.log</div><div class="line">pid-file=/var/run/mysqld/mysqld.pid</div></pre></td></tr></table></figure>
+<p>初始化mysql，记得初始化密码</p>
+<blockquote>
+<h1 id="bin-mysqld-–initialize-–user-mysql-–basedir-usr-local-mysql-–datadir-usr-local-mysql-data"><a href="#bin-mysqld-–initialize-–user-mysql-–basedir-usr-local-mysql-–datadir-usr-local-mysql-data" class="headerlink" title="bin/mysqld –initialize –user=mysql –basedir=/usr/local/mysql –datadir=/usr/local/mysql/data"></a>bin/mysqld –initialize –user=mysql –basedir=/usr/local/mysql –datadir=/usr/local/mysql/data</h1><h1 id="bin-mysqld-–user-mysql-–basedir-usr-local-mysql-–datadir-usr-local-mysql-data"><a href="#bin-mysqld-–user-mysql-–basedir-usr-local-mysql-–datadir-usr-local-mysql-data" class="headerlink" title="bin/mysqld –user=mysql –basedir=/usr/local/mysql –datadir=/usr/local/mysql/data"></a>bin/mysqld –user=mysql –basedir=/usr/local/mysql –datadir=/usr/local/mysql/data</h1><h1 id="bin-mysql-ssl-rsa-setup"><a href="#bin-mysql-ssl-rsa-setup" class="headerlink" title="bin/mysql_ssl_rsa_setup"></a>bin/mysql_ssl_rsa_setup</h1><h1 id="cp-usr-local-mysql-support-files-mysql-server-etc-init-d-mysqld"><a href="#cp-usr-local-mysql-support-files-mysql-server-etc-init-d-mysqld" class="headerlink" title="cp /usr/local/mysql/support-files/mysql.server /etc/init.d/mysqld"></a>cp /usr/local/mysql/support-files/mysql.server /etc/init.d/mysqld</h1><h1 id="service-mysqld-start"><a href="#service-mysqld-start" class="headerlink" title="service mysqld start"></a>service mysqld start</h1></blockquote>
+<p>重置密码</p>
+<blockquote>
+<h1 id="mysql-uroot-p-passwd-e-“set-password-password-‘-‘-”"><a href="#mysql-uroot-p-passwd-e-“set-password-password-‘-‘-”" class="headerlink" title="mysql -uroot -p$passwd -e “set password = password(‘*‘)”;"></a>mysql -uroot -p$passwd -e “set password = password(‘<em>*</em>‘)”;</h1></blockquote>
+<h3 id="boost-1-59-0-单独rpmbuild"><a href="#boost-1-59-0-单独rpmbuild" class="headerlink" title="boost_1_59_0 单独rpmbuild"></a>boost_1_59_0 单独rpmbuild</h3><blockquote>
+<p> #vim ~/rpmbuild/SPECS/boost.spec</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line">Name:       boost</div><div class="line">Version:    1_59_0</div><div class="line">Release:    1%&#123;?dist&#125;</div><div class="line">Summary:    boost_install</div><div class="line"></div><div class="line">Group:      System Environment/Daemons</div><div class="line">License:    GPLv2</div><div class="line">URL:        http://www.boost.org/users/history/version_1_59_0.html</div><div class="line">Source0:    boost-1_59_0.tar.gz</div><div class="line">BuildRoot:   %&#123;_topdir&#125;/%&#123;name&#125;-%&#123;version&#125;-%&#123;release&#125;</div><div class="line"></div><div class="line">BuildRequires:  gcc,make,gcc-c++,bzip2-devel,python-devel,python-libs,libicu-devel</div><div class="line">Requires:	bzip2,python-libs  </div><div class="line"></div><div class="line">%description</div><div class="line">boost1_59_0 install</div><div class="line"></div><div class="line">%prep</div><div class="line">%setup -q</div><div class="line"></div><div class="line"></div><div class="line">%build</div><div class="line">BOOST_ROOT=`pwd`</div><div class="line">export BOOST_ROOT</div><div class="line">./bootstrap.sh --prefix=%&#123;buildroot&#125;/usr/ --with-toolset=gcc --with-icu</div><div class="line">install -d -m 755 %&#123;buildroot&#125;/usr/</div><div class="line">./b2 --layout=system install threading=multi link=shared</div><div class="line"></div><div class="line"></div><div class="line">%clean</div><div class="line">rm -rf %&#123;buildroot&#125;</div><div class="line"></div><div class="line">%post -p /sbin/ldconfig</div><div class="line">%postun -p /sbin/ldconfig</div><div class="line"></div><div class="line">%files</div><div class="line">%defattr(-,root,root,-)</div><div class="line">#$&#123;_includedir&#125;/boost</div><div class="line">/usr/*</div><div class="line">%doc</div><div class="line">%changelog</div></pre></td></tr></table></figure>
+<h2 id="mysql-5-7-16-包括boost"><a href="#mysql-5-7-16-包括boost" class="headerlink" title="mysql-5.7.16 包括boost"></a>mysql-5.7.16 包括boost</h2><blockquote>
+<h1 id="vim-rpmbuild-SPECS-mysql-spec"><a href="#vim-rpmbuild-SPECS-mysql-spec" class="headerlink" title="vim ~/rpmbuild/SPECS/mysql.spec"></a>vim ~/rpmbuild/SPECS/mysql.spec</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div></pre></td><td class="code"><pre><div class="line">Name:       mysql</div><div class="line">Version:    5.7.16</div><div class="line">Release:    1%&#123;?dist&#125;</div><div class="line">Summary:    mysql_install</div><div class="line"></div><div class="line">Group:      System Environment/Daemons</div><div class="line">License:    GPLv2</div><div class="line">URL:    http://www.boost.org/users/history/version_1_59_0.html&amp;&amp;http://dev.mysql.com/downloads/mysql/</div><div class="line">Source0:    boost_1_59_0.tar.gz</div><div class="line">Source1:    %&#123;name&#125;-%&#123;version&#125;.tar.gz</div><div class="line">Source2:    my.cnf</div><div class="line">BuildRoot:  %(mktemp -ud %&#123;_tmppath&#125;/%&#123;name&#125;-%&#123;version&#125;-%&#123;release&#125;-XXXXXX)</div><div class="line"></div><div class="line">BuildRequires:  gcc,make,gcc-c++,cmake,bison-devel,ncurses,ncurses-devel,bzip2-devel,python-devel,python-libs,bzip2,libicu-devel</div><div class="line">Requires:   python-libs,bzip2,perl-JSON,perl-Time-HiRes</div><div class="line"></div><div class="line">%description</div><div class="line">Build mysql-5.7.16.tar.gz to mysql-5.7.16.rpm</div><div class="line"></div><div class="line">%prep</div><div class="line"></div><div class="line">%setup -q -b 0 -b 1</div><div class="line"></div><div class="line">%build</div><div class="line">cd ../boost_1_59_0</div><div class="line">BOOST_ROOT=`pwd`</div><div class="line">export BOOST_ROOT</div><div class="line">./bootstrap.sh --prefix=%&#123;buildroot&#125;/usr/ --with-toolset=gcc --with-icu</div><div class="line">install -d -m 755 %&#123;buildroot&#125;/usr/</div><div class="line">./b2 install threading=multi link=shared</div><div class="line"></div><div class="line">cd ../mysql-5.7.16</div><div class="line">cmake -DCMAKE_INSTALL_PREFIX=/usr/local/mysql -DMYSQL_DATADIR=/usr/local/mysql/data -DSYSCONFDIR=/etc -DWITH_MYISAM_STORAGE_ENGINE=1 -DWITH_INNOBASE_STORAGE_ENGINE=1 -DWITH_MEMORY_STORAGE_ENGINE=1 -DWI</div><div class="line">TH_ARCHIVE_STORAGE_ENGINE=1 -DWITH_BLACKHOLE_STORAGE_ENGINE=1 -DWITH_PERFSCHEMA_STORAGE_ENGINE=1 -DEXTRA_CHARSETS=all -DENABLED_LOCAL_INFILE=1 -DEXTRA_CHARSETS=all -DDEFAULT_CHARSET=utf8 -DDEFAULT_COLLATION=utf8_general_ci -DWITH_READLINE=1 -DMYSQL_USER=mysql</div><div class="line">make -j3 %&#123;?_smp_mflags&#125;</div><div class="line"></div><div class="line">%install</div><div class="line">make install DESTDIR=%&#123;buildroot&#125;</div><div class="line">install -d -m 755 %&#123;buildroot&#125;/usr/</div><div class="line">%&#123;__install&#125; -p -D %&#123;SOURCE2&#125; %&#123;buildroot&#125;/etc/my.cnf</div><div class="line"></div><div class="line">%pre</div><div class="line">if [ $1 == 1 ];then</div><div class="line">    /usr/sbin/useradd mysql -M -s /sbin/nologin 2&gt;/dev/null</div><div class="line">fi</div><div class="line"></div><div class="line">%post</div><div class="line">if [ $1 == 1 ];then</div><div class="line">    mkdir -p /usr/local/mysql/data</div><div class="line">    chown -R mysql:mysql /usr/local/mysql/data 2&gt;/dev/null</div><div class="line">    /usr/local/mysql/bin/mysqld --initialize --user=mysql --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data 2&gt;&amp;1 | tee /usr/local/mysql/default-passwd</div><div class="line">    #/usr/local/mysql/bin/mysqld --user=mysql --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data 2&gt;/dev/null</div><div class="line">    /usr/local/mysql/bin/mysql_ssl_rsa_setup --datadir=/usr/local/mysql/data 2&gt;/dev/null</div><div class="line">    cp /usr/local/mysql/bin/* /usr/bin/ 2&gt;/dev/null</div><div class="line">    cp /usr/local/mysql/support-files/mysql.server /etc/init.d/mysqld 2&gt;/dev/null</div><div class="line">    /sbin/chkconfig --add mysqld</div><div class="line">    /sbin/install-info %&#123;_infodir&#125;/%&#123;name&#125;.info %&#123;_infodir&#125;/dir 2&gt; /dev/null || :</div><div class="line">fi</div><div class="line"></div><div class="line">%preun</div><div class="line">if [ $1 == 0 ];then</div><div class="line">    /usr/sbin/userdel -r mysql 2&gt; /dev/null</div><div class="line">    /etc/init.d/mysqld stop &gt; /dev/null 2&gt;&amp;1</div><div class="line">    /sbin/chkconfig --del mysqld 2&gt; /dev/null</div><div class="line">    /sbin/install-info --delete %&#123;_infodir&#125;/%&#123;name&#125;.info %&#123;_infodir&#125;/dir 2&gt; /dev/null || :</div><div class="line">fi</div><div class="line"></div><div class="line">%postun</div><div class="line">if [ $1 == 0 ];then</div><div class="line">    rm -rf /usr/local/mysql 2&gt; /dev/null</div><div class="line">    rm -rf /usr/bin/mysql* 2&gt; /dev/null</div><div class="line">    rm -rf /etc/my.cnf 2&gt; /dev/null</div><div class="line">    rm -rf /etc/init.d/mysqld 2&gt; /dev/null</div><div class="line">fi</div><div class="line"></div><div class="line">%clean</div><div class="line">rm -rf %&#123;buildroot&#125;</div><div class="line"></div><div class="line">%files</div><div class="line">%defattr(-,root,root,-)</div><div class="line">/usr/local/mysql/*</div><div class="line">/usr/*</div><div class="line">%config(noreplace) /etc/my.cnf</div><div class="line">%doc</div><div class="line"></div><div class="line">%changelog</div></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/12/13/rpm包制作-nginx/" rel="next" title="rpm包制作之-nginx">
+                <i class="fa fa-chevron-left"></i> rpm包制作之-nginx
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/01/13/nginx优化的一些总结/" rel="prev" title="nginx优化的一些总结">
+                nginx优化的一些总结 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/12/14/rpm包制作-mysql-5.7.16/"
+           data-title="rpm包制作之-mysql-5.7.16" data-url="http://yoursite.com/2016/12/14/rpm包制作-mysql-5.7.16/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://olno6tnmz.bkt.clouddn.com/1.JPG"
+               alt="little sky" />
+          <p class="site-author-name" itemprop="name">little sky</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/tytredhat" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/litsky" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://blog.csdn.net/tshangshi" target="_blank" title="CSDN">
+                  
+                    <i class="fa fa-fw fa-book"></i>
+                  
+                  CSDN
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql-5-7-16源码编译安装"><span class="nav-number">1.</span> <span class="nav-text">mysql-5.7.16源码编译安装</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#相关依赖安装"><span class="nav-number">1.1.</span> <span class="nav-text">相关依赖安装</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#yum-y-install-make-gcc-gcc-c-cmake-bison-devel-ncurses-ncurses-devel-perl-JSON-perl-devel-perl-Time-HiRes"><span class="nav-number"></span> <span class="nav-text">yum -y install make gcc gcc-c++ cmake bison-devel ncurses ncurses-devel perl-JSON perl-devel perl-Time-HiRes</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ntpdate-cn-pool-ntp-org"><span class="nav-number"></span> <span class="nav-text">ntpdate cn.pool.ntp.org</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#useradd-M-s-sbin-nologin-mysql"><span class="nav-number"></span> <span class="nav-text">useradd -M -s /sbin/nologin mysql</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Mysql编译安装"><span class="nav-number">0.1.</span> <span class="nav-text">Mysql编译安装</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cmake-DCMAKE-INSTALL-PREFIX-usr-local-mysql-DMYSQL-DATADIR-usr-local-mysql-data-DSYSCONFDIR-etc-DWIT"><span class="nav-number"></span> <span class="nav-text">cmake -DCMAKE_INSTALL_PREFIX=/usr/local/mysql -DMYSQL_DATADIR=/usr/local/mysql/data -DSYSCONFDIR=/etc -DWIT</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#make-j3-amp-amp-make-install"><span class="nav-number"></span> <span class="nav-text">make -j3 && make install</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mkdir-var-lib-mysql"><span class="nav-number"></span> <span class="nav-text">mkdir /var/lib/mysql/</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#chown-R-mysql-mysql-var-lib-mysql"><span class="nav-number"></span> <span class="nav-text">chown -R mysql:mysql /var/lib/mysql/</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mkdir-p-usr-local-mysql-data"><span class="nav-number"></span> <span class="nav-text">mkdir -p /usr/local/mysql/data</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#chown-R-mysql-mysql-usr-local-mysql-data"><span class="nav-number"></span> <span class="nav-text">chown -R mysql:mysql /usr/local/mysql/data</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-etc-my-cnf"><span class="nav-number"></span> <span class="nav-text">vim /etc/my.cnf</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#bin-mysqld-–initialize-–user-mysql-–basedir-usr-local-mysql-–datadir-usr-local-mysql-data"><span class="nav-number"></span> <span class="nav-text">bin/mysqld –initialize –user=mysql –basedir=/usr/local/mysql –datadir=/usr/local/mysql/data</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#bin-mysqld-–user-mysql-–basedir-usr-local-mysql-–datadir-usr-local-mysql-data"><span class="nav-number"></span> <span class="nav-text">bin/mysqld –user=mysql –basedir=/usr/local/mysql –datadir=/usr/local/mysql/data</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#bin-mysql-ssl-rsa-setup"><span class="nav-number"></span> <span class="nav-text">bin/mysql_ssl_rsa_setup</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cp-usr-local-mysql-support-files-mysql-server-etc-init-d-mysqld"><span class="nav-number"></span> <span class="nav-text">cp /usr/local/mysql/support-files/mysql.server /etc/init.d/mysqld</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#service-mysqld-start"><span class="nav-number"></span> <span class="nav-text">service mysqld start</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql-uroot-p-passwd-e-“set-password-password-‘-‘-”"><span class="nav-number"></span> <span class="nav-text">mysql -uroot -p$passwd -e “set password = password(‘*‘)”;</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#boost-1-59-0-单独rpmbuild"><span class="nav-number">0.1.</span> <span class="nav-text">boost_1_59_0 单独rpmbuild</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mysql-5-7-16-包括boost"><span class="nav-number">1.</span> <span class="nav-text">mysql-5.7.16 包括boost</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-rpmbuild-SPECS-mysql-spec"><span class="nav-number"></span> <span class="nav-text">vim ~/rpmbuild/SPECS/mysql.spec</span></a></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">little sky</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"ltsky"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

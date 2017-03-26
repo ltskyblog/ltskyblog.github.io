@@ -1,0 +1,777 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.png?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="JIRAJIRA 是澳大利亚 Atlassian 公司开发的一款优秀的问题跟踪管理软件工具，可以对各种类型的问题进行跟踪管理，包括缺陷、任务、需求、改进等。JIRA采用J2EE技术，能够跨平台部署。它正被广泛的开源软件组织，以及全球著名的公司使用。JIRA产品非常完善且功能强大，安装配置简单，多语言支持、界面十分友好，和其他系统如CVS、Subversion（SVN）、VSS、LDAP、邮件服务整">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Centos下JIRA破解安装">
+<meta property="og:url" content="http://yoursite.com/2016/10/31/Centos下JIRA破解安装/index.html">
+<meta property="og:site_name" content="lSky's blog">
+<meta property="og:description" content="JIRAJIRA 是澳大利亚 Atlassian 公司开发的一款优秀的问题跟踪管理软件工具，可以对各种类型的问题进行跟踪管理，包括缺陷、任务、需求、改进等。JIRA采用J2EE技术，能够跨平台部署。它正被广泛的开源软件组织，以及全球著名的公司使用。JIRA产品非常完善且功能强大，安装配置简单，多语言支持、界面十分友好，和其他系统如CVS、Subversion（SVN）、VSS、LDAP、邮件服务整">
+<meta property="og:image" content="http://img.blog.csdn.net/20161031212320731">
+<meta property="og:image" content="http://img.blog.csdn.net/20161031212405747">
+<meta property="og:image" content="http://img.blog.csdn.net/20161031212524419">
+<meta property="og:image" content="http://img.blog.csdn.net/20161031212603339">
+<meta property="og:updated_time" content="2017-02-25T09:07:42.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Centos下JIRA破解安装">
+<meta name="twitter:description" content="JIRAJIRA 是澳大利亚 Atlassian 公司开发的一款优秀的问题跟踪管理软件工具，可以对各种类型的问题进行跟踪管理，包括缺陷、任务、需求、改进等。JIRA采用J2EE技术，能够跨平台部署。它正被广泛的开源软件组织，以及全球著名的公司使用。JIRA产品非常完善且功能强大，安装配置简单，多语言支持、界面十分友好，和其他系统如CVS、Subversion（SVN）、VSS、LDAP、邮件服务整">
+<meta name="twitter:image" content="http://img.blog.csdn.net/20161031212320731">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/10/31/Centos下JIRA破解安装/"/>
+
+
+
+
+
+  <title> Centos下JIRA破解安装 | lSky's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lSky's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/10/31/Centos下JIRA破解安装/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="little sky">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="http://olno6tnmz.bkt.clouddn.com/1.JPG">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="lSky's blog">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="lSky's blog" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                Centos下JIRA破解安装
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-10-31T21:28:11+08:00">
+                2016-10-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/other/" itemprop="url" rel="index">
+                    <span itemprop="name">other</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/31/Centos下JIRA破解安装/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/31/Centos下JIRA破解安装/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="JIRA"><a href="#JIRA" class="headerlink" title="JIRA"></a>JIRA</h2><p>JIRA 是澳大利亚 Atlassian 公司开发的一款优秀的问题跟踪管理软件工具，可以对各种类型的问题进行跟踪管理，包括缺陷、任务、需求、改进等。JIRA采用J2EE技术，能够跨平台部署。它正被广泛的开源软件组织，以及全球著名的公司使用。<br>JIRA产品非常完善且功能强大，安装配置简单，多语言支持、界面十分友好，和其他系统如CVS、Subversion（SVN）、VSS、LDAP、邮件服务整合得相当好，文档齐全，可用性以及可扩展性方面都十分出色，拥有完整的用户权限管理。<br><a id="more"></a></p>
+<h2 id="数据库部署"><a href="#数据库部署" class="headerlink" title="数据库部署"></a>数据库部署</h2><blockquote>
+<h1 id="mysql-uroot-p"><a href="#mysql-uroot-p" class="headerlink" title="mysql -uroot -p"></a>mysql -uroot -p</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mysql&gt; create database jira character set UTF8;</div></pre></td></tr></table></figure>
+<h2 id="Jira安装"><a href="#Jira安装" class="headerlink" title="Jira安装"></a>Jira安装</h2><p>1.解压并移动到confluence的同级目录</p>
+<blockquote>
+<h1 id="tar-xvf-atlassian-jira-6-3-6-tar-gz"><a href="#tar-xvf-atlassian-jira-6-3-6-tar-gz" class="headerlink" title="tar -xvf atlassian-jira-6.3.6.tar.gz"></a>tar -xvf atlassian-jira-6.3.6.tar.gz</h1><h1 id="mv-atlassian-jira-6-3-6-standalone-opt-atlassian-jira"><a href="#mv-atlassian-jira-6-3-6-standalone-opt-atlassian-jira" class="headerlink" title="mv atlassian-jira-6.3.6-standalone /opt/atlassian/jira"></a>mv atlassian-jira-6.3.6-standalone /opt/atlassian/jira</h1></blockquote>
+<p>2.查看8080端口是否被占用，若占用则修改端口号(conf/server.xml)</p>
+<blockquote>
+<h1 id="lsof-i-8080"><a href="#lsof-i-8080" class="headerlink" title="lsof -i:8080"></a>lsof -i:8080</h1></blockquote>
+<p>3.配置jira_home</p>
+<blockquote>
+<h1 id="vim-opt-atlassian-jira-atlassian-jira-WEB-INF-classes-jira-application-properties"><a href="#vim-opt-atlassian-jira-atlassian-jira-WEB-INF-classes-jira-application-properties" class="headerlink" title="vim /opt/atlassian/jira/atlassian-jira/WEB-INF/classes/jira-application.properties"></a>vim /opt/atlassian/jira/atlassian-jira/WEB-INF/classes/jira-application.properties</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">jira.home = /var/atlassian/application-data/jira  #与安装路径不在同一位置</div></pre></td></tr></table></figure>
+<blockquote>
+<h1 id="mkdir-p-var-atlassian-application-data-jira"><a href="#mkdir-p-var-atlassian-application-data-jira" class="headerlink" title="mkdir -p /var/atlassian/application-data/jira"></a>mkdir -p /var/atlassian/application-data/jira</h1></blockquote>
+<p>4.启动jira</p>
+<blockquote>
+<h1 id="opt-atlassian-jira-bin-start-jira-sh"><a href="#opt-atlassian-jira-bin-start-jira-sh" class="headerlink" title="/opt/atlassian/jira/bin/start-jira.sh"></a>/opt/atlassian/jira/bin/start-jira.sh</h1></blockquote>
+<p>5.注册试用账号<br><a href="https://www.atlassian.com" target="_blank" rel="external">https://www.atlassian.com</a></p>
+<p>6.汉化<br><a href="https://translations.atlassian.com/dashboard/download?lang=zh_CN#/JIRA/6.3.6" target="_blank" rel="external">https://translations.atlassian.com/dashboard/download?lang=zh_CN#/JIRA/6.3.6</a></p>
+<blockquote>
+<h1 id="cp-JIRA-6-3-6-language-pack-zh-CN-jar-opt-atlassian-jira-atlassian-jira-WEB-INF-lib"><a href="#cp-JIRA-6-3-6-language-pack-zh-CN-jar-opt-atlassian-jira-atlassian-jira-WEB-INF-lib" class="headerlink" title="cp JIRA-6.3.6-language-pack-zh_CN.jar /opt/atlassian/jira/atlassian-jira/WEB-INF/lib/"></a>cp JIRA-6.3.6-language-pack-zh_CN.jar /opt/atlassian/jira/atlassian-jira/WEB-INF/lib/</h1></blockquote>
+<p>7.拷贝用于Java连接MySQL数据库的jar包</p>
+<blockquote>
+<h1 id="cp-mysql-connector-java-5-1-32-bin-jar-opt-atlassian-jira-atlassian-jira-WEB-INF-lib"><a href="#cp-mysql-connector-java-5-1-32-bin-jar-opt-atlassian-jira-atlassian-jira-WEB-INF-lib" class="headerlink" title="cp mysql-connector-java-5.1.32-bin.jar /opt/atlassian/jira/atlassian-jira/WEB-INF/lib/"></a>cp mysql-connector-java-5.1.32-bin.jar /opt/atlassian/jira/atlassian-jira/WEB-INF/lib/</h1></blockquote>
+<p>8.部署jira<br>Web输入 ip:8080进入安装界面<br>选择连接到其他数据库mysql，输入登录名等，配置数据库可能等一段时间<br><img src="http://img.blog.csdn.net/20161031212320731" alt="这里写图片描述"><br>定义标题名称<br><img src="http://img.blog.csdn.net/20161031212405747" alt="这里写图片描述"><br>选择安装Software development<br><img src="http://img.blog.csdn.net/20161031212524419" alt="这里写图片描述"><br>选择已经有一个许可证，输入在官网注册的邮箱地址和密码<br><img src="http://img.blog.csdn.net/20161031212603339" alt="这里写图片描述"></p>
+<p>9.破解并更新证书<br>替换两个jar包（破解）</p>
+<blockquote>
+<h1 id="cp-atlassian-extras-2-2-2-jar-opt-atlassian-jira-atlassian-jira-WEB-INF-lib"><a href="#cp-atlassian-extras-2-2-2-jar-opt-atlassian-jira-atlassian-jira-WEB-INF-lib" class="headerlink" title="cp atlassian-extras-2.2.2.jar /opt/atlassian/jira/atlassian-jira/WEB-INF/lib/"></a>cp atlassian-extras-2.2.2.jar /opt/atlassian/jira/atlassian-jira/WEB-INF/lib/</h1><h1 id="cp-atlassian-universal-plugin-manager-plugin-2-17-13-jar-opt-atlassian-jira-atlassian-jira-WEB-INF-atlassian-bundled-plugins"><a href="#cp-atlassian-universal-plugin-manager-plugin-2-17-13-jar-opt-atlassian-jira-atlassian-jira-WEB-INF-atlassian-bundled-plugins" class="headerlink" title="cp atlassian-universal-plugin-manager-plugin-2.17.13.jar /opt/atlassian/jira/atlassian-jira/WEB-INF/atlassian-bundled-plugins"></a>cp atlassian-universal-plugin-manager-plugin-2.17.13.jar /opt/atlassian/jira/atlassian-jira/WEB-INF/atlassian-bundled-plugins</h1></blockquote>
+<p>管理员账号登录jira，系统——》授权——更新授权<br>填写授权码，授权码参数范例如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">Description=JIRA: Commercial,</div><div class="line">CreationDate=你的安装日期，格式（yyyy-mm-dd）,</div><div class="line">jira.LicenseEdition=ENTERPRISE,</div><div class="line">Evaluation=false,</div><div class="line">jira.LicenseTypeName=COMMERCIAL,</div><div class="line">jira.active=true,</div><div class="line">licenseVersion=2,</div><div class="line">MaintenanceExpiryDate=你想设置的失效日期如：2099-12-31,</div><div class="line">Organisation=joiandjoin,</div><div class="line">SEN=你申请到的SEN注意没有前缀LID,</div><div class="line">ServerID=你申请到的ServerID,</div><div class="line">jira.NumberOfUsers=-1,</div><div class="line">LicenseID=LID你申请到的SEN，注意LID前缀不要丢掉,</div><div class="line">LicenseExpiryDate=你想设置的失效日期如：2099-12-31,</div><div class="line">PurchaseDate=你的安装日期，格式（yyyy-mm-dd）</div></pre></td></tr></table></figure></p>
+<p>本次安装授权码实例为：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">Description=JIRA: Commercial,</div><div class="line">CreationDate=2016-10-19,</div><div class="line">jira.LicenseEdition=ENTERPRISE,</div><div class="line">Evaluation=false,</div><div class="line">jira.LicenseTypeName=COMMERCIAL,</div><div class="line">jira.active=true,</div><div class="line">licenseVersion=2,</div><div class="line">MaintenanceExpiryDate=2099-12-31,</div><div class="line">Organisation=pl,</div><div class="line">SEN=SEN-8421963,</div><div class="line">ServerID=BPT3-4QRK-FCRR-HEP3,</div><div class="line">jira.NumberOfUsers=-1,</div><div class="line">LicenseID=AAABBw0ODAoPeNptkFtLxDAQhd/zKwI+R9Kwy66FPKxthGhvtF0p4kuso0a6sUwvuP/edissyj4MD</div><div class="line">HPOfHOYqzu0tICWeoJy4a+FzzkNwpIK7q1ICF2Ntu3tl5P3Ot89+1SNphnMPCEBwqkJTQ9y9jN+w</div><div class="line">zxBPi2a68jW4DpQr/a0rZJS5VmuC0XOBNnjAH/s5bGFxBxABmkcqzzQu2jRTd3bEZaFZvE+AnYzR</div><div class="line">JDYWNeDM64G9d1aPJ4TeXxOlOK7cbZbjrbNgkyGwwtg+rbvJpBkHikAR0Adytt0XzFV7R5Y+qQzV</div><div class="line">kWZIoVK5FQsWq03YrvdkN/Ekz3S4SXlcpRswPrDdPD/aT+P1nzDMC0CFQCM9+0LlHVNnZQnSTwuR</div><div class="line">O3eK+2gVgIUCteTs4Q3khIgrnsY64hxYB/d8bM=X02dh,</div><div class="line">LicenseExpiryDate=2099-12-31,</div><div class="line">PurchaseDate=2016-10-19</div></pre></td></tr></table></figure></p>
+<p>###JIRA Agile安装破解<br>JIRA Agile都能够帮助你在整个发布过程中管理待办事项(backlog)、计划冲刺(sprint)并且监测项目进度。</p>
+<p>之前已经替换了jira agile破解版的jar包（atlassian-universal-plugin-manager-plugin-2.17.13.jar），之后添加证书<br>点击插件菜单- &gt;左侧目录中点击管理插件 -》 找到jira agile -&gt;找到授权设置<br>类似：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">Description=JIRA Agile (formerly GreenHopper) for JIRA\: Commercial,  </div><div class="line">NumberOfUsers=-1,  </div><div class="line">CreationDate=2016-10-28,  </div><div class="line">Evaluation=false,  </div><div class="line">greenhopper.LicenseEdition=ENTERPRISE,  </div><div class="line">licenseVersion=2,  </div><div class="line">MaintenanceExpiryDate=2099-12-31,  </div><div class="line">Organisation=saper,  </div><div class="line">greenhopper.active=true,  </div><div class="line">SEN=SEN-L4390388,  </div><div class="line">ServerID=BQJE-RNSR-9NMG-JDWN,   </div><div class="line">LicenseExpiryDate=2099-01-01,   </div><div class="line">LicenseTypeName=COMMERCIAL,  </div><div class="line">PurchaseDate=2016-10-28</div></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/17/mysql双机热备/" rel="next" title="mysql双机热备">
+                <i class="fa fa-chevron-left"></i> mysql双机热备
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/11/08/ansible学习笔记-简介与部署/" rel="prev" title="ansible学习笔记之-简介与部署">
+                ansible学习笔记之-简介与部署 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/10/31/Centos下JIRA破解安装/"
+           data-title="Centos下JIRA破解安装" data-url="http://yoursite.com/2016/10/31/Centos下JIRA破解安装/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://olno6tnmz.bkt.clouddn.com/1.JPG"
+               alt="little sky" />
+          <p class="site-author-name" itemprop="name">little sky</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/tytredhat" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/litsky" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://blog.csdn.net/tshangshi" target="_blank" title="CSDN">
+                  
+                    <i class="fa fa-fw fa-book"></i>
+                  
+                  CSDN
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#JIRA"><span class="nav-number">1.</span> <span class="nav-text">JIRA</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#数据库部署"><span class="nav-number">2.</span> <span class="nav-text">数据库部署</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mysql-uroot-p"><span class="nav-number"></span> <span class="nav-text">mysql -uroot -p</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Jira安装"><span class="nav-number">1.</span> <span class="nav-text">Jira安装</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#tar-xvf-atlassian-jira-6-3-6-tar-gz"><span class="nav-number"></span> <span class="nav-text">tar -xvf atlassian-jira-6.3.6.tar.gz</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mv-atlassian-jira-6-3-6-standalone-opt-atlassian-jira"><span class="nav-number"></span> <span class="nav-text">mv atlassian-jira-6.3.6-standalone /opt/atlassian/jira</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#lsof-i-8080"><span class="nav-number"></span> <span class="nav-text">lsof -i:8080</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-opt-atlassian-jira-atlassian-jira-WEB-INF-classes-jira-application-properties"><span class="nav-number"></span> <span class="nav-text">vim /opt/atlassian/jira/atlassian-jira/WEB-INF/classes/jira-application.properties</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#mkdir-p-var-atlassian-application-data-jira"><span class="nav-number"></span> <span class="nav-text">mkdir -p /var/atlassian/application-data/jira</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#opt-atlassian-jira-bin-start-jira-sh"><span class="nav-number"></span> <span class="nav-text">/opt/atlassian/jira/bin/start-jira.sh</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cp-JIRA-6-3-6-language-pack-zh-CN-jar-opt-atlassian-jira-atlassian-jira-WEB-INF-lib"><span class="nav-number"></span> <span class="nav-text">cp JIRA-6.3.6-language-pack-zh_CN.jar /opt/atlassian/jira/atlassian-jira/WEB-INF/lib/</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cp-mysql-connector-java-5-1-32-bin-jar-opt-atlassian-jira-atlassian-jira-WEB-INF-lib"><span class="nav-number"></span> <span class="nav-text">cp mysql-connector-java-5.1.32-bin.jar /opt/atlassian/jira/atlassian-jira/WEB-INF/lib/</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cp-atlassian-extras-2-2-2-jar-opt-atlassian-jira-atlassian-jira-WEB-INF-lib"><span class="nav-number"></span> <span class="nav-text">cp atlassian-extras-2.2.2.jar /opt/atlassian/jira/atlassian-jira/WEB-INF/lib/</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#cp-atlassian-universal-plugin-manager-plugin-2-17-13-jar-opt-atlassian-jira-atlassian-jira-WEB-INF-atlassian-bundled-plugins"><span class="nav-number"></span> <span class="nav-text">cp atlassian-universal-plugin-manager-plugin-2.17.13.jar /opt/atlassian/jira/atlassian-jira/WEB-INF/atlassian-bundled-plugins</span></a></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">little sky</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"ltsky"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

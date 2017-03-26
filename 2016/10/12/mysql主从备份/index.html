@@ -1,0 +1,762 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.png?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="环境两台centos6.5服务器master ip： 192.168.44.137slave ip：192.168.44.139保证两台服务器数据库状态相同，若都是初始化状态不一致，则先在master上对要进行主从备份的表进行锁表操作（FLUSH TABLES WITH READ LOCK;），导出数据库进行备份。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mysql主从备份">
+<meta property="og:url" content="http://yoursite.com/2016/10/12/mysql主从备份/index.html">
+<meta property="og:site_name" content="lSky's blog">
+<meta property="og:description" content="环境两台centos6.5服务器master ip： 192.168.44.137slave ip：192.168.44.139保证两台服务器数据库状态相同，若都是初始化状态不一致，则先在master上对要进行主从备份的表进行锁表操作（FLUSH TABLES WITH READ LOCK;），导出数据库进行备份。">
+<meta property="og:updated_time" content="2017-02-25T09:07:42.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="mysql主从备份">
+<meta name="twitter:description" content="环境两台centos6.5服务器master ip： 192.168.44.137slave ip：192.168.44.139保证两台服务器数据库状态相同，若都是初始化状态不一致，则先在master上对要进行主从备份的表进行锁表操作（FLUSH TABLES WITH READ LOCK;），导出数据库进行备份。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/10/12/mysql主从备份/"/>
+
+
+
+
+
+  <title> mysql主从备份 | lSky's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lSky's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/10/12/mysql主从备份/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="little sky">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="http://olno6tnmz.bkt.clouddn.com/1.JPG">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="lSky's blog">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="lSky's blog" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                mysql主从备份
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-10-12T20:00:08+08:00">
+                2016-10-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/mysql/" itemprop="url" rel="index">
+                    <span itemprop="name">mysql</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/10/12/mysql主从备份/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/10/12/mysql主从备份/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="环境"><a href="#环境" class="headerlink" title="环境"></a>环境</h2><p>两台centos6.5服务器<br>master ip： 192.168.44.137<br>slave ip：192.168.44.139<br>保证两台服务器数据库状态相同，若都是初始化状态不一致，则先在master上对要进行主从备份的表进行锁表操作（FLUSH TABLES WITH READ LOCK;），导出数据库进行备份。<br><a id="more"></a></p>
+<h2 id="一-mysql主从备份（复制）的基本原理"><a href="#一-mysql主从备份（复制）的基本原理" class="headerlink" title="一.mysql主从备份（复制）的基本原理"></a>一.mysql主从备份（复制）的基本原理</h2><p>mysql支持单向、异步复制，复制过程中一个服务器充当主服务器，而一个或多个其它服务器充当从服务器。mysql复制基于主服务器在二进制日志中跟踪所有对数据库的更改(更新、删除等等)。因此，要进行复制，必须在主服务器上启用二进制日志。每个从服务器从主服务器接收主服务器已经记录到其二进制日志的保存的更新。当一个从服务器连接主服务器时，它通知主服务器从服务器在日志中读取的最后一次成功更新的位置。从服务器接收从那时起发生的任何更新，并在本机上执行相同的更新。然后封锁并等待主服务器通知新的更新。从服务器执行备份不会干扰主服务器，在备份过程中主服务器可以继续处理更新。</p>
+<h2 id="Master服务器"><a href="#Master服务器" class="headerlink" title="Master服务器"></a>Master服务器</h2><p>修改配置文件(为使用事务的InnoDB在复制中最大的持久性和一致性，你应该指定innodb_flush_log_at_trx_commit=1,sync_binlog=1选项)</p>
+<blockquote>
+<h1 id="vim-etc-my-cnf"><a href="#vim-etc-my-cnf" class="headerlink" title="vim /etc/my.cnf"></a>vim /etc/my.cnf</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">[mysqld]</div><div class="line">log-bin=/tmp/binlog		#开启二进制日志</div><div class="line">server-id=1 				#服务器唯一ID，可用ip最后一个字段标识</div><div class="line">innodb_flush_log_at_trx_commit=1  #每执行完一条COMMIT命令就写一次日志并进行同步</div><div class="line">sync_binlog=1 	#每经过1次日志写操作就把日志文件写入硬盘一次</div></pre></td></tr></table></figure>
+<p>重启mysql</p>
+<blockquote>
+<h1 id="server-mysqld-resart"><a href="#server-mysqld-resart" class="headerlink" title="server mysqld resart"></a>server mysqld resart</h1></blockquote>
+<p>新建帐户，并设置replication slave权限<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mysql&gt; grant replication slave on *.* to &apos;salveuser&apos;@&apos;%&apos; identified by &apos;redhat&apos;;</div></pre></td></tr></table></figure></p>
+<p>查询master的状态<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mysql&gt;show master status\G;</div></pre></td></tr></table></figure></p>
+<h2 id="Slave服务器"><a href="#Slave服务器" class="headerlink" title="Slave服务器"></a>Slave服务器</h2><p>修改配置文件</p>
+<blockquote>
+<h1 id="vim-etc-my-cnf-1"><a href="#vim-etc-my-cnf-1" class="headerlink" title="vim /etc/my.cnf"></a>vim /etc/my.cnf</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">server-id=2</div><div class="line">relay_log=/tmp/mysql-relay-bin  #relay_log配置中继日志</div></pre></td></tr></table></figure>
+<p>Tips：当设置MySQL级联复制时，打开slave服务器的二进制日志，并把log-slave-updates设置为1</p>
+<p>重启</p>
+<blockquote>
+<h1 id="server-msyqld-resart"><a href="#server-msyqld-resart" class="headerlink" title="server msyqld resart"></a>server msyqld resart</h1></blockquote>
+<p>让slave连接master，并开始重做master二进制日志中的事件。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">mysql&gt; change master to </div><div class="line">    -&gt; master_host=&apos;192.168.44.137&apos;,</div><div class="line">    -&gt; master_user=&apos;salveuser&apos;,</div><div class="line">    -&gt; master_password=&apos;redhat&apos;,</div><div class="line">    -&gt; master_log_file=&apos;binlog.000001&apos;,</div><div class="line">-&gt; master_log_pos=106,</div><div class="line">mysql&gt; slave start;</div></pre></td></tr></table></figure></p>
+<p>查看master和slave上线程的状态<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mysql&gt; show processlist;</div></pre></td></tr></table></figure></p>
+<p>查看从服务器状态<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">mysql&gt; show slave status\G；</div></pre></td></tr></table></figure></p>
+<p>Master_host 指的是 主服务器的地址。<br>Master_user 指的是主服务器上用来复制的用户。  从服务器会用此账号来登录主服务。进行复制。<br>Master_log_file 就是前面提到的， 主服务器上的日志文件名.<br>Read_Master_log_pos 就是前面提到的主服务器的日志记录位置， 从服务器根据这两个条件来选择复制的文件和位置。<br>Slave_IO_Running:  指的就是从服务器上负责读取主服务器的线程工作状态。 从服务器用这个专门的线程链接到主服务器上，并把日志拷贝回来。<br>Slave_SQL_Running: 指的就是专门执行sql的线程。 它负责把复制回来的Relaylog执行到自己的数据库中。 这两个参数必须都为Yes 才表明复制在正常工作。</p>
+<p>从服务器my.cnf 设置read-only，从服务器用户不给super权限，使从服务器不可写</p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/09/28/session共享之nginx+tomcat+memcache/" rel="next" title="session共享之nginx+tomcat+memcache">
+                <i class="fa fa-chevron-left"></i> session共享之nginx+tomcat+memcache
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/12/Amoeba实现mysql读写分离/" rel="prev" title="Amoeba实现mysql读写分离">
+                Amoeba实现mysql读写分离 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/10/12/mysql主从备份/"
+           data-title="mysql主从备份" data-url="http://yoursite.com/2016/10/12/mysql主从备份/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://olno6tnmz.bkt.clouddn.com/1.JPG"
+               alt="little sky" />
+          <p class="site-author-name" itemprop="name">little sky</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/tytredhat" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/litsky" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://blog.csdn.net/tshangshi" target="_blank" title="CSDN">
+                  
+                    <i class="fa fa-fw fa-book"></i>
+                  
+                  CSDN
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#环境"><span class="nav-number">1.</span> <span class="nav-text">环境</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#一-mysql主从备份（复制）的基本原理"><span class="nav-number">2.</span> <span class="nav-text">一.mysql主从备份（复制）的基本原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Master服务器"><span class="nav-number">3.</span> <span class="nav-text">Master服务器</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-etc-my-cnf"><span class="nav-number"></span> <span class="nav-text">vim /etc/my.cnf</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#server-mysqld-resart"><span class="nav-number"></span> <span class="nav-text">server mysqld resart</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Slave服务器"><span class="nav-number">1.</span> <span class="nav-text">Slave服务器</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-etc-my-cnf-1"><span class="nav-number"></span> <span class="nav-text">vim /etc/my.cnf</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#server-msyqld-resart"><span class="nav-number"></span> <span class="nav-text">server msyqld resart</span></a></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">little sky</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"ltsky"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

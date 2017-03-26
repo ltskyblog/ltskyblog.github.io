@@ -1,0 +1,841 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.png?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="相关命令">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ansible学习笔记-知识点整理">
+<meta property="og:url" content="http://yoursite.com/2016/11/19/ansible学习笔记-知识点整理/index.html">
+<meta property="og:site_name" content="lSky's blog">
+<meta property="og:description" content="相关命令">
+<meta property="og:updated_time" content="2017-02-25T09:07:42.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ansible学习笔记-知识点整理">
+<meta name="twitter:description" content="相关命令">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/11/19/ansible学习笔记-知识点整理/"/>
+
+
+
+
+
+  <title> ansible学习笔记-知识点整理 | lSky's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lSky's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/11/19/ansible学习笔记-知识点整理/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="little sky">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="http://olno6tnmz.bkt.clouddn.com/1.JPG">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="lSky's blog">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="lSky's blog" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                ansible学习笔记-知识点整理
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-11-19T16:51:32+08:00">
+                2016-11-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/自动化/" itemprop="url" rel="index">
+                    <span itemprop="name">自动化</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2016/11/19/ansible学习笔记-知识点整理/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2016/11/19/ansible学习笔记-知识点整理/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="相关命令"><a href="#相关命令" class="headerlink" title="相关命令"></a>相关命令</h2><a id="more"></a>
+<p>1.ansible-doc命令：获取模块列表，及模块使用格式；<br>ansible-doc -l ：获取列表<br>ansible-doc -s  module_name ：获取指定模块的使用信息</p>
+<p>2.ansible-vault<br>ansible-vault主要应用于配置文件中含有敏感信息，又不希望他能被人看到，vault可以帮你加密/解密这个配置文件</p>
+<p>3.ansible-galaxy<br>下载第三方扩展模块</p>
+<p>4.ansible-pull<br>The ansible-pull is a small script that will checkout a repo of configuration instructions from git, and then run ansible-playbook against that content.</p>
+<p>5.ansible-playbook<br>执行playbook</p>
+<h2 id="ansible使用"><a href="#ansible使用" class="headerlink" title="ansible使用"></a>ansible使用</h2><p>ansible 命令格式</p>
+<blockquote>
+<p>ansible  <host-pattern>  [-f forks] [-m module_name]  [-a args]</host-pattern></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>&lt;host-pattern&gt;</th>
+<th>指明管控主机，以模式形式表示或者直接给定 IP ，必须事先定义在文件中； all 设置所有</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>[-f forks]</td>
+<td>指明每批管控多少主机，默认为 5 个主机一批次</td>
+</tr>
+<tr>
+<td>[-m module_name]</td>
+<td>使用何种模块管理操作，所有的操作都需要通过模块来指定</td>
+</tr>
+<tr>
+<td>[-a args]</td>
+<td>指明模块专用参数； args 一般为 key=value 格式 注意：command模块(默认模块 )的参数非为kv格式，而是直接给出要执行的命令即可；</td>
+</tr>
+</tbody>
+</table>
+<p>更多参数　ansible -ｈ</p>
+<h3 id="一些常用模块"><a href="#一些常用模块" class="headerlink" title="一些常用模块"></a>一些常用模块</h3><p>command模块 [执行远程命令]<br>shell模块 [执行远程主机的shell/python脚本]<br>script模块 [在远程主机执行主控端的shell/python脚本]<br>raw模块 [类似于command模块、支持管道传递]</p>
+<p>#user</p>
+<blockquote>
+<h1 id="ansible-test-m-user-a-‘name-mtest-state-present-system-true’"><a href="#ansible-test-m-user-a-‘name-mtest-state-present-system-true’" class="headerlink" title="ansible test -m user -a ‘name=mtest state=present system=true’"></a>ansible test -m user -a ‘name=mtest state=present system=true’</h1></blockquote>
+<p>#crontab</p>
+<blockquote>
+<h1 id="ansible-test-m-cron-a-‘name-”Time”-state-present-minute-”-5”-job-”-usr-sbin-ntpdate-time-nist-gov”‘"><a href="#ansible-test-m-cron-a-‘name-”Time”-state-present-minute-”-5”-job-”-usr-sbin-ntpdate-time-nist-gov”‘" class="headerlink" title="ansible test -m cron -a ‘name=”Time” state=present minute=”*/5” job=”/usr/sbin/ntpdate time.nist.gov”‘"></a>ansible test -m cron -a ‘name=”Time” state=present minute=”*/5” job=”/usr/sbin/ntpdate time.nist.gov”‘</h1></blockquote>
+<p>#file</p>
+<blockquote>
+<h1 id="ansible-test-m-file-a-‘path-tmp-test-txt-state-touch-mode-600-owner-mtest’"><a href="#ansible-test-m-file-a-‘path-tmp-test-txt-state-touch-mode-600-owner-mtest’" class="headerlink" title="ansible test -m file -a ‘path=/tmp/test.txt state=touch mode=600 owner=mtest’"></a>ansible test -m file -a ‘path=/tmp/test.txt state=touch mode=600 owner=mtest’</h1></blockquote>
+<p>#copy  template<br>Tips:Template可以把变量（vars）传过去(文件中)</p>
+<blockquote>
+<h1 id="ansible-test-m-copy-a-‘src-root-1-dest-tmp-owner-mtest-mode-755’"><a href="#ansible-test-m-copy-a-‘src-root-1-dest-tmp-owner-mtest-mode-755’" class="headerlink" title="ansible test -m copy -a ‘src=/root/1 dest=/tmp/ owner=mtest mode=755’"></a>ansible test -m copy -a ‘src=/root/1 dest=/tmp/ owner=mtest mode=755’</h1></blockquote>
+<p>#yum</p>
+<blockquote>
+<h1 id="ansible-test-m-yum-a-‘name-httpd-state-present’"><a href="#ansible-test-m-yum-a-‘name-httpd-state-present’" class="headerlink" title="ansible test -m yum -a ‘name=httpd state=present’"></a>ansible test -m yum -a ‘name=httpd state=present’</h1><p>ansible test -m yum -a ‘name=<a href="http://nginx.org/packages/centos/6/noarch/RPMS/nginx-release-centos-6-0.el6.ngx.noarch.rpm" target="_blank" rel="external">http://nginx.org/packages/centos/6/noarch/RPMS/nginx-release-centos-6-0.el6.ngx.noarch.rpm</a> state=present’</p>
+</blockquote>
+<p>#service</p>
+<blockquote>
+<h1 id="ansible-test-m-service-a-‘name-httpd-state-started-enabled-yes’"><a href="#ansible-test-m-service-a-‘name-httpd-state-started-enabled-yes’" class="headerlink" title="ansible test -m service -a ‘name=httpd state=started enabled=yes’"></a>ansible test -m service -a ‘name=httpd state=started enabled=yes’</h1></blockquote>
+<p>#script</p>
+<blockquote>
+<h1 id="ansible-test-m-script-a-‘-root-1-sh’"><a href="#ansible-test-m-script-a-‘-root-1-sh’" class="headerlink" title="ansible test -m script -a ‘/root/1.sh’"></a>ansible test -m script -a ‘/root/1.sh’</h1></blockquote>
+<p>#setup  收集主机的系统信息</p>
+<blockquote>
+<h1 id="ansible-test-m-setup-–tree-tmp-facts-将所有主机的信息输入到-tmp-facts目录下"><a href="#ansible-test-m-setup-–tree-tmp-facts-将所有主机的信息输入到-tmp-facts目录下" class="headerlink" title="ansible test -m setup –tree /tmp/facts #将所有主机的信息输入到/tmp/facts目录下"></a>ansible test -m setup –tree /tmp/facts #将所有主机的信息输入到/tmp/facts目录下</h1></blockquote>
+<p>###playbook 使用<br>playbooks 是 ansible 更强大的配置管理组件，实现基于文本文件编排执行的多个任务，且多次重复执行</p>
+<p>(1) 核心元素<br>Tasks 任务、 Variables 变量、 Templates 模板、 Handlers 处理器、 Roles 角色</p>
+<p>(2)playbooks 中 定义任务：</p>
+<ul>
+<li>name： task description     注释 描述信息<br>module_name: module_args    声明模块：定义 ansible 模块参数</li>
+</ul>
+<blockquote>
+<p>　# vim 1.yml</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">- hosts: test</div><div class="line">  remote_user: root</div><div class="line">  gather_facts: False</div><div class="line">  tasks:</div><div class="line">       - name: install php</div><div class="line">         yum: name=php state=present</div></pre></td></tr></table></figure>
+<blockquote>
+<h1 id="vim-useradd-yml"><a href="#vim-useradd-yml" class="headerlink" title="vim useradd.yml"></a>vim useradd.yml</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">- hosts: test</div><div class="line">  remote_user: root</div><div class="line">  gather_facts: False</div><div class="line">  vars:</div><div class="line">       username: ghosts</div><div class="line">       password: 12345</div><div class="line">  tasks:</div><div class="line">       - name: add user</div><div class="line">         user: name=&#123;&#123;username&#125;&#125; state=present</div><div class="line">       - name: set password</div><div class="line">         shell: /bin/echo &#123;&#123;password&#125;&#125; | /usr/bin/passwd --stdin &#123;&#123;username&#125;&#125;</div></pre></td></tr></table></figure>
+<p> 变量的重新赋值调用# ansible-playbook useradd.yml –extra-vars “username=ubuntu”</p>
+<p>条件判断<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">- hosts: test</div><div class="line">  remote_user: root</div><div class="line">  #gather_facts: False（需要收集facts的信息时，必须开启）</div><div class="line">  tasks:</div><div class="line">       - name: install php</div><div class="line">         yum: name=php state=present</div><div class="line">         when: ansible_os_family == &quot;Redhat&quot;</div></pre></td></tr></table></figure></p>
+<p>迭代<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">- hosts: test</div><div class="line">  remote_user: root</div><div class="line">  gather_facts: False</div><div class="line">  tasks:</div><div class="line">       - name: add users</div><div class="line">         user: name=&#123;&#123;item&#125;&#125; state=present</div><div class="line">         with_items:</div><div class="line">                   - user1</div><div class="line">                   - user2</div></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">- hosts: test</div><div class="line">  remote_user: root</div><div class="line">  gather_facts: False</div><div class="line">  tasks:</div><div class="line">       - name: add users</div><div class="line">         user: name=&#123;&#123;item.name&#125;&#125; state=present groups=&#123;&#123;item.groups&#125;&#125;</div><div class="line">         with_items:</div><div class="line">                   - &#123;name: &apos;user1&apos;,groups: &apos;root&apos;&#125;</div><div class="line">                   - &#123;name: &apos;user2&apos;,groups: &apos;ko&apos;&#125;</div></pre></td></tr></table></figure>
+<p>Handlers<br>handlers：也是task，但只有其关注的条件满足时，才会被触发执行<br>Handlers最佳的应用场景是用来重启服务，或者触发系统重启操作<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">- hosts: test</div><div class="line">  remote_user: root</div><div class="line">  gather_facts: False</div><div class="line">  tasks:</div><div class="line">       - name: install httpd</div><div class="line">         yum: name=httpd state=present</div><div class="line"></div><div class="line">       - name: install config file</div><div class="line">         copy: src=/root/httpd.conf dest=/etc/httpd/conf/httpd.conf</div><div class="line">         notify:                  # 如果copy执行完之后文件发送了变化，则执行</div><div class="line">               - restart httpd      # 调用handler</div><div class="line">         tags: conf</div><div class="line"></div><div class="line">       - name: start httpd service</div><div class="line">         service: name=httpd state=started</div><div class="line"></div><div class="line">  handlers:</div><div class="line">       - name: restart httpd</div><div class="line">         service: name=httpd state=restarted</div></pre></td></tr></table></figure></p>
+<p>在 notify 中定义内容一定要和tasks中定义的 - name 内容一样，这样才能达到触发的效果，否则会不生效。<br>tags运行一部分内容  ansible-playbook -t conf web.yml</p>
+<p>sudo<br>clien赋予sudo权限</p>
+<blockquote>
+<h1 id="visudo"><a href="#visudo" class="headerlink" title="visudo"></a>visudo</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">root    ALL=(ALL)       ALL</div><div class="line">tyt     ALL=(ALL)       ALL</div></pre></td></tr></table></figure>
+<p>server</p>
+<blockquote>
+<h1 id="vim-etc-ansible-hosts"><a href="#vim-etc-ansible-hosts" class="headerlink" title="vim /etc/ansible/hosts"></a>vim /etc/ansible/hosts</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">[test]</div><div class="line">192.168.182.130 ansible_sudo_pass=***</div></pre></td></tr></table></figure>
+<blockquote>
+<h1 id="vim-msu-yml"><a href="#vim-msu-yml" class="headerlink" title="vim msu.yml"></a>vim msu.yml</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">- hosts: test</div><div class="line">  remote_user: tyt</div><div class="line">  gather_facts: False</div><div class="line">  tasks:</div><div class="line">       - name: httpd start</div><div class="line">         service: name=httpd state=started</div><div class="line">         sudo: yes</div></pre></td></tr></table></figure>
+<p>获取执行命令的输出结果（用于判断） –Register<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">- hosts: test</div><div class="line">  remote_user: root</div><div class="line">  gather_facts: False</div><div class="line">  tasks:</div><div class="line">       - name: echo date</div><div class="line">         command: date</div><div class="line">         register: date_output</div><div class="line">       - name: echo date_output</div><div class="line">         command: echo &quot;14&quot;</div><div class="line">         when: date_output.stdout.split(&apos; &apos;)[2] == &apos;14&apos;</div></pre></td></tr></table></figure></p>
+<p>使用delegate_to关键字便可以配置任务在其他机器上执行.其他模块还是在所有配置的管理机器上运行的,当到了这个关键字的任务就是使用委托的机器上运行.而facts还是适用于当前的host<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">- name: Fetch configuration from all webservers</div><div class="line">  hosts: webservers</div><div class="line">  tasks:</div><div class="line">    - name: Get config</div><div class="line">      get_url: dest=configs/&#123;&#123; ansible_hostname &#125;&#125; force=yes url=http://&#123;&#123; ansible_hostname &#125;&#125;/diagnostic/config</div><div class="line">      delegate_to: test</div></pre></td></tr></table></figure></p>
+<p>本地操作功能 –local_action ，转给本地<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">- hosts: test</div><div class="line">  remote_user: root</div><div class="line">  gather_facts: False</div><div class="line">  tasks:</div><div class="line">       - name: add host</div><div class="line">         local_action: shell echo &quot;192.168.182.130 www.nginx4.com&quot; &gt;&gt; /etc/hosts</div></pre></td></tr></table></figure></p>
+<blockquote>
+<h1 id="vim-etc-ansible-hosts-1"><a href="#vim-etc-ansible-hosts-1" class="headerlink" title="vim /etc/ansible/hosts"></a>vim /etc/ansible/hosts</h1></blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">[test]</div><div class="line">192.168.182.130</div></pre></td></tr></table></figure>
+<p>ansilbe自1.2版本引入的新特性，用于层次性、结构化地组织playbook。roles能够根据层次型结构自动装载变量文件、tasks以及handlers等。要使用roles只需要在playbook中使用include指令即可。简单来讲，roles就是通过分别将变量、文件、任务、模块及处理器放置于单独的目录中，并可以便捷地include它们的一种机制。角色一般用于基于主机构建服务的场景中，但也可以是用于构建守护进程等场景中。<br> 1、创建role的步骤<br>     ①创建以roles命名的目录；<br>     ②在roles目录中分别创建以各角色名称命名的目录，如webservers、dbservers等；<br>     ③在每个角色命名的目录中分别创建files、handlers、meta、tasks、templates和vars目录；用不到的目录可以创建为空目录，也可以不创建；<br>     ④在playbook文件中，调用各角色；<br>  2、role内各目录中可用的文件<br>     tasks目录：至少应该包含一个名为main.yml的文件，其定义了此角色的任务列表；此文件可以使用include包含其它的位于此目录中的task文件；<br>     files目录：存放由copy或script等模块调用的静态文件；<br>     templates目录：template模块会自动在此目录中寻找Jinja2模板文件；<br>     handlers目录：此目录中应当包含一个main.yml文件，用于定义此角色用到的各handler；此文件可以使用include包含其它的位于此目录中的handler文件；<br>     vars目录：至少有一个main.yml文件，用于定义此角色用到的变量；<br>     meta目录：至少有一个main.yml文件，用于定义此角色的特殊设定及其依赖关系；ansible 1.3及其以后的版本才支持；<br>     default目录：为当前角色设定默认变量时使用此目录；应当包含一个main.yml文件；</p>
+<p>ansible-playbook参数：<br>–check模式，仅检测，但不实行<br>–diff 内容变更对比<br>–synctax-check 检测一下语法是否有问题<br>become 的使用，当需要执行某些特殊操作需要专门权限时，可以用become_user那强调切换</p>
+<h3 id="host-inventory"><a href="#host-inventory" class="headerlink" title="host inventory"></a>host inventory</h3><p>ansible基于ssh连接inventory中指定的远程主机时还可以通过参数指定其交互方式常用的参数如下所示<br>ansible_ssh_host # 要连接的主机名<br>ansible_ssh_port # 端口号默认是22<br>ansible_ssh_user # ssh连接时默认使用的用户名<br>ansible_ssh_pass # ssh连接时的密码<br>ansible_sudo_pass # 使用sudo连接用户是的密码<br>ansible_ssh_private_key_file # 秘钥文件如果不想使用ssh-agent管理时可以使用此选项<br>ansible_shell_type # shell的类型默认sh  </p>
+<p>Dynamic Inventory指通过外部脚本获取主机列表，并按照ansible 所要求的格式返回给ansilbe命令的。这部分一般会结合CMDB资管系统、zabbix 监控系统、crobble安装系统、云计算平台等获取主机信息。(Ansible在接受脚本动态获取主机信息时支持的是json格式)<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/env python</div><div class="line"># -*- coding:utf-8 -*-</div><div class="line">import json</div><div class="line">hostlip = [&apos;192.168.182.130&apos;,&apos;192.168.182.129&apos;]</div><div class="line">group = &apos;mserver&apos;</div><div class="line">hostdata = &#123;group:&#123;&quot;hosts&quot;:hostlip&#125;&#125;</div><div class="line">#hostdata = &#123;group:host1ip&#125;</div><div class="line">print json.dumps(hostdata,indent=4)</div></pre></td></tr></table></figure></p>
+<p>Ansible调用</p>
+<blockquote>
+<h1 id="ansible-i-muser-py-mserver-m-command-a-‘uptime’"><a href="#ansible-i-muser-py-mserver-m-command-a-‘uptime’" class="headerlink" title="ansible -i muser.py mserver -m command -a ‘uptime’"></a>ansible -i muser.py mserver -m command -a ‘uptime’</h1></blockquote>
+<h3 id="api"><a href="#api" class="headerlink" title="api"></a>api</h3><p>Ansible-api<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">#!/usr/bin/env python</div><div class="line"># -*- coding=utf-8 -*-</div><div class="line"></div><div class="line">import ansible.runner</div><div class="line">import json</div><div class="line"></div><div class="line">runner = ansible.runner.Runner(</div><div class="line">    module_name=&apos;ping&apos;,</div><div class="line">    module_args=&apos;&apos;,</div><div class="line">    pattern=&apos;test&apos;,</div><div class="line">    forks=5</div><div class="line">)</div><div class="line"></div><div class="line">datastructure = runner.run()</div><div class="line">data = json.dumps(datastructure,indent=4)</div><div class="line">print data</div></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/11/08/confluence与jira的结合/" rel="next" title="confluence与jira的结合">
+                <i class="fa fa-chevron-left"></i> confluence与jira的结合
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/12/13/rpm包制作-nginx/" rel="prev" title="rpm包制作之-nginx">
+                rpm包制作之-nginx <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2016/11/19/ansible学习笔记-知识点整理/"
+           data-title="ansible学习笔记-知识点整理" data-url="http://yoursite.com/2016/11/19/ansible学习笔记-知识点整理/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://olno6tnmz.bkt.clouddn.com/1.JPG"
+               alt="little sky" />
+          <p class="site-author-name" itemprop="name">little sky</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/tytredhat" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/litsky" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://blog.csdn.net/tshangshi" target="_blank" title="CSDN">
+                  
+                    <i class="fa fa-fw fa-book"></i>
+                  
+                  CSDN
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#相关命令"><span class="nav-number">1.</span> <span class="nav-text">相关命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ansible使用"><span class="nav-number">2.</span> <span class="nav-text">ansible使用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#一些常用模块"><span class="nav-number">2.1.</span> <span class="nav-text">一些常用模块</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ansible-test-m-user-a-‘name-mtest-state-present-system-true’"><span class="nav-number"></span> <span class="nav-text">ansible test -m user -a ‘name=mtest state=present system=true’</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ansible-test-m-cron-a-‘name-”Time”-state-present-minute-”-5”-job-”-usr-sbin-ntpdate-time-nist-gov”‘"><span class="nav-number"></span> <span class="nav-text">ansible test -m cron -a ‘name=”Time” state=present minute=”*/5” job=”/usr/sbin/ntpdate time.nist.gov”‘</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ansible-test-m-file-a-‘path-tmp-test-txt-state-touch-mode-600-owner-mtest’"><span class="nav-number"></span> <span class="nav-text">ansible test -m file -a ‘path=/tmp/test.txt state=touch mode=600 owner=mtest’</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ansible-test-m-copy-a-‘src-root-1-dest-tmp-owner-mtest-mode-755’"><span class="nav-number"></span> <span class="nav-text">ansible test -m copy -a ‘src=/root/1 dest=/tmp/ owner=mtest mode=755’</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ansible-test-m-yum-a-‘name-httpd-state-present’"><span class="nav-number"></span> <span class="nav-text">ansible test -m yum -a ‘name=httpd state=present’</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ansible-test-m-service-a-‘name-httpd-state-started-enabled-yes’"><span class="nav-number"></span> <span class="nav-text">ansible test -m service -a ‘name=httpd state=started enabled=yes’</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ansible-test-m-script-a-‘-root-1-sh’"><span class="nav-number"></span> <span class="nav-text">ansible test -m script -a ‘/root/1.sh’</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ansible-test-m-setup-–tree-tmp-facts-将所有主机的信息输入到-tmp-facts目录下"><span class="nav-number"></span> <span class="nav-text">ansible test -m setup –tree /tmp/facts #将所有主机的信息输入到/tmp/facts目录下</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-useradd-yml"><span class="nav-number"></span> <span class="nav-text">vim useradd.yml</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#visudo"><span class="nav-number"></span> <span class="nav-text">visudo</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-etc-ansible-hosts"><span class="nav-number"></span> <span class="nav-text">vim /etc/ansible/hosts</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-msu-yml"><span class="nav-number"></span> <span class="nav-text">vim msu.yml</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-etc-ansible-hosts-1"><span class="nav-number"></span> <span class="nav-text">vim /etc/ansible/hosts</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#host-inventory"><span class="nav-number">0.1.</span> <span class="nav-text">host inventory</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#ansible-i-muser-py-mserver-m-command-a-‘uptime’"><span class="nav-number"></span> <span class="nav-text">ansible -i muser.py mserver -m command -a ‘uptime’</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#api"><span class="nav-number">0.1.</span> <span class="nav-text">api</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">little sky</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"ltsky"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>

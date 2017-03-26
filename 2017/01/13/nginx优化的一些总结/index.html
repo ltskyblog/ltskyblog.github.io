@@ -1,0 +1,775 @@
+<!doctype html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.png?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="关于nginx优化的一些总结">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nginx优化的一些总结">
+<meta property="og:url" content="http://yoursite.com/2017/01/13/nginx优化的一些总结/index.html">
+<meta property="og:site_name" content="lSky's blog">
+<meta property="og:description" content="关于nginx优化的一些总结">
+<meta property="og:updated_time" content="2017-02-25T09:07:42.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="nginx优化的一些总结">
+<meta name="twitter:description" content="关于nginx优化的一些总结">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    sidebar: {"position":"left","display":"hide","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/01/13/nginx优化的一些总结/"/>
+
+
+
+
+
+  <title> nginx优化的一些总结 | lSky's blog </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">lSky's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+  <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/01/13/nginx优化的一些总结/">
+
+  <span style="display:none" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <meta itemprop="name" content="little sky">
+    <meta itemprop="description" content="">
+    <meta itemprop="image" content="http://olno6tnmz.bkt.clouddn.com/1.JPG">
+  </span>
+
+  <span style="display:none" itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+    <meta itemprop="name" content="lSky's blog">
+    <span style="display:none" itemprop="logo" itemscope itemtype="http://schema.org/ImageObject">
+      <img style="display:none;" itemprop="url image" alt="lSky's blog" src="">
+    </span>
+  </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                nginx优化的一些总结
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-01-13T21:43:42+08:00">
+                2017-01-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/web/" itemprop="url" rel="index">
+                    <span itemprop="name">web</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/01/13/nginx优化的一些总结/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/01/13/nginx优化的一些总结/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+              <div class="post-description">
+                  关于nginx优化的一些总结
+              </div>
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
+<h2 id="一．压缩"><a href="#一．压缩" class="headerlink" title="一．压缩"></a>一．压缩</h2><p>gzip on;      启用 gzip 压缩功能<br>gzip_min_length 1k; 不压缩临界值，大于1K的才压缩<br>gzip_http_version； 设置对指定http协议版本进行压缩<br>gzip_buffers 设置缓冲区的数量和大小，如果大小没有设置，那么默认是一个页码的大小，依赖所在系统平台<br>gzip_comp_level 1~9 指定压缩率，数值越大，压缩率是最大的，但是消耗CPU资源多，而且慢；而小的数值是最快的，消耗资源少，但是压缩率小。这个根据需要自己权衡<br>gzip_proxied 根据响应的类型，来设置是否压缩，匹配的前提是后端服务器返回Via Header头<br>gzip_types 指定需要压缩类型<br>gzip_vary 该指令用于设定是否向响应数据包添加Vary：Accept-Encoding HTTP头<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">gzip    on;</div><div class="line">gzip_comp_level  6;    # 压缩比例，比例越大，压缩时间越长。默认是1</div><div class="line">gzip_types    text/xml text/plain text/css application/javascript application/x-javascript application/rss+xml;     # 哪些文件可以被压缩</div><div class="line">gzip_disable    &quot;MSIE [1-6]\.&quot;;</div></pre></td></tr></table></figure></p>
+<p>测试：<br>用curl测试Gzip是否成功开启（-H/–header <line></line> 自定义头信息传递给服务器）</p>
+<blockquote>
+<p>curl -I -H “Accept-Encoding: gzip, deflate” “<a href="http://www.slyar.com/blog/" target="_blank" rel="external">http://www.slyar.com/blog/</a>“</p>
+</blockquote>
+<h2 id="二．缓存"><a href="#二．缓存" class="headerlink" title="二．缓存"></a>二．缓存</h2><p>1.nginx通过expires指令来设置浏览器的Header<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">#图片缓存30天</div><div class="line">location ~.*\.(jpg|png|jpeg)$  </div><div class="line">&#123;  </div><div class="line">  expires 30d;  </div><div class="line">&#125;</div><div class="line"> </div><div class="line">#js css缓存一小时</div><div class="line">location ~.*\.(js|css)?$  </div><div class="line">&#123;  </div><div class="line">  expires 1h;  </div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>2.nginx自带的内置缓存模块proxy_cache<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">proxy_temp_file_write_size 128k;  </div><div class="line">proxy_temp_path   /usr/local/nginx/proxy_temp; </div><div class="line">proxy_cache_path /usr/local/nginx/proxy_cache levels=1:2 keys_zone=content:20m inactive=1d max_size=100m;   </div><div class="line">levels设置目录层次 keys_zone设置缓存名字和共享内存大小 inactive在指定时间内没人访问则被删除 max_size最大缓存空间</div><div class="line"></div><div class="line"> location /  </div><div class="line"> &#123;  </div><div class="line"> proxy_cache content; //根keys_zone后的内容对应  </div><div class="line"> proxy_cache_valid  200 304 301 302 10d;   //哪些状态缓存多长时间  </div><div class="line"> proxy_cache_valid  any 1d;    //其他的缓存多长时间  </div><div class="line"> proxy_cache_key $host$uri$is_args$args;   //通过key来hash，定义KEY的值 </div><div class="line"> &#125;</div></pre></td></tr></table></figure></p>
+<p>缓存的文件名和key为代理URL的MD5 码。</p>
+<h2 id="三．其他"><a href="#三．其他" class="headerlink" title="三．其他"></a>三．其他</h2><p>worker_processes 定义了nginx对外提供web服务时的worker进程数。<br>worker_rlimit_nofile 102400;<br>更改worker进程的最大打开文件数限制，这个指令是指当一个nginx进程打开的最多文件描述符数目，理论值应该是最多打开文件数（ulimit -n）与nginx进程数（worker_processes）相除，但是nginx分配请求并不是那么均匀，所以最好与ulimit -n的值保持一致。</p>
+<h3 id="Events模块"><a href="#Events模块" class="headerlink" title="Events模块"></a>Events模块</h3><p>multi_accept on 告诉nginx收到一个新连接通知后接受尽可能多的连接。<br>worker_connections 设置可由一个worker进程同时打开的最大连接数。如果设置了上面提到的worker_rlimit_nofile。最大客户数也由系统的可用socket连接数限制（~ 64K），所以设置不切实际的高没什么好处。<br>use epoll;  使用epoll的I/O模型</p>
+<h3 id="HTTP-模块"><a href="#HTTP-模块" class="headerlink" title="HTTP 模块"></a>HTTP 模块</h3><p>server_tokens  并不会让nginx执行的速度更快，但它可以关闭在错误页面中的nginx版本数字，这样对于安全性是有好处的</p>
+<p>sendfile 可以让sendfile()发挥作用。sendfile()可以在磁盘和TCP socket之间互相拷贝数据(或任意两个文件描述符)。Pre-sendfile是传送数据之前在用户空间申请数据缓冲区。之后用read()将数据从文件拷贝到这个缓冲区，write()将缓冲区数据写入网络。sendfile()是立即将数据从磁盘读到OS缓存。因为这种拷贝是在内核完成的，sendfile()要比组合read()和write()以及打开关闭丢弃缓冲更加有效(处理静态文件时有效)。<br>tcp_nopush 告诉nginx在一个数据包里发送所有头文件，而不一个接一个的发送。<br>tcp_nodelay 告诉nginx不要缓存数据，而是一段一段的发送–当需要及时发送数据时，就应该给应用设置这个属性，这样发送一小块数据信息时就不能立即得到返回值。通过设置套接字的TCP_NODELAY = on 选项来完成，这样就禁用了Nagle 算法。</p>
+<p>limit_conn_zone 设置用于保存各种key（比如当前连接数）的共享内存的参数。5m就是5兆字节，这个值应该被设置的足够大以存储（32K<em>5）32byte状态或者（16K</em>5）64byte状态。<br>limit_conn 为给定的key设置最大连接数。这里key是addr，我们设置的值是100，也就是说我们允许每一个IP地址最多同时打开有100个连接。<br>limit_conn_zone $binary_remote_addr zone=addr:5m;<br>limit_conn addr 100;</p>
+<p>ngx_http_limit_conn_module 模块<br>服务器流量异常，负载过大等等。对于大流量恶意的攻击访问，会带来带宽的浪费，服务器压力，影响业务，往往考虑对同一个ip的连接数，并发数进行限制。</p>
+<p>include /etc/nginx/mime.types;<br>default_type text/html;<br>charset UTF-8;<br>include 只是一个在当前文件中包含另一个文件内容的指令。这里我们使用它来加载稍后会用到的一系列的MIME类型。<br>default_type 设置文件使用的默认的MIME-type。<br>charset 设置我们的头文件中的默认的字符集</p>
+<p>open_file_cache 打开缓存的同时也指定了缓存最大数目，以及缓存的时间。我们可以设置一个相对高的最大时间，这样我们可以在它们不活动超过20秒后清除掉。<br>open_file_cache_valid 在open_file_cache中指定检测正确信息的间隔时间。<br>open_file_cache_min_uses 定义了open_file_cache中指令参数不活动时间期间里最小的文件数。<br>open_file_cache_errors 指定了当搜索一个文件时是否缓存错误信息，也包括再次给配置中添加文件。我们也包括了服务器模块，这些是在不同文件中定义的。如果你的服务器模块不在这些位置，你就得修改这一行来指定正确的位置。<br>open_file_cache 指令会对以下信息进行缓存：</p>
+<ul>
+<li>打开文件描述符的文件大小和修改时间信息</li>
+<li>存在的目录信息</li>
+<li>搜索文件的错误信息：文件不存在无权限读取等信息</li>
+</ul>
+<p>#指定一个request可接受的body大小,即请求头里的Content-Length. 如果请求body超过该值，nginx返回413(“Request Entity Too Large”)，大文件需要适当调大<br>client_max_body_size 10M;<br>#客户端请求头部的缓冲区大小，这个可以根据你的系统分页大小来设置，一般一个请求头的大小不会超过1k<br>client_header_buffer_size 4k;<br>#指定允许为客户端请求头最大分配buffer个数和大小.<br>large_client_header_buffers 8 128k;</p>
+<h2 id="四-内核优化"><a href="#四-内核优化" class="headerlink" title="四.内核优化"></a>四.内核优化</h2><blockquote>
+<h1 id="vim-etc-sysctl-conf"><a href="#vim-etc-sysctl-conf" class="headerlink" title="vim /etc/sysctl.conf"></a>vim /etc/sysctl.conf</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">前端使用Nat时下面参数不可用</div><div class="line">net.ipv4.tcp_tw_reuse = 1</div><div class="line">net.ipv4.tcp_tw_recycle = 1</div><div class="line">net.ipv4.tcp_timestamps = 1</div><div class="line">net.ipv4.tcp_fin_timeout = 20</div></pre></td></tr></table></figure>
+<h1 id="netstat-s-grep-timestamp"><a href="#netstat-s-grep-timestamp" class="headerlink" title="netstat -s|grep timestamp"></a>netstat -s|grep timestamp</h1><p>timeout数量不大的时候，不用调整tcp_tw_recycle参数，虽然服务器端没有使用nat，但是客户端使用snat的情况很多，如果后发现packets rejects in established connections because of timestamp增长很快</p>
+</blockquote>
+<p>net.ipv4.tcp_max_tw_buckets = 6000 表示系统同时保持TIME_WAIT套接字的最大数量，如果超过这个数字，TIME_WAIT套接字将立刻被清除并打印警告信息。<br>net.ipv4.ip_local_port_range = 1024 65000<br>允许系统打开的端口范围<br>net.ipv4.tcp_syncookies = 1<br>#表示开启SYN Cookies。当出现SYN等待队列溢出时，启用cookies来处理，可防范少量SYN攻击，默认为0，表示关闭；<br>net.core.somaxconn = 262144<br>web 应用中listen 函数的backlog 默认会给我们内核参数的net.core.somaxconn 限制到128，而nginx 定义的NGX_LISTEN_BACKLOG 默认为511，所以有必要调整这个值。<br>net.core.netdev_max_backlog = 262144<br>该参数决定了, 每个网络接口接收数据包的速率比内核处理这些包的速率快时，允许送到队列的数据包的最大数目, 不要设的过大<br>net.ipv4.tcp_synack_retries = 1<br>syn-ack握手状态重试次数，默认5，遭受syn-flood攻击时改为1或2<br>为了打开对端的连接，内核需要发送一个SYN 并附带一个回应前面一个SYN 的ACK。也就是所谓三次握手中的第二次握手。这个设置决定了内核放弃连接之前发送SYN+ACK 包的数量。<br>net.ipv4.tcp_syn_retries = 1<br>外向syn握手重试次数，默认4<br>在内核放弃建立连接之前发送SYN 包的数量。<br>net.ipv4.neigh.default.gc_stale_time=120    ARP参数，检查一次相邻层记录的有效性的周期。当相邻层记录失效时，将在给它发送数据前，再解析一次。缺省值是60秒。</p>
+<p>net.ipv4.conf.default.arp_ignore = 1<br>net.ipv4.conf.all.arp_ignore = 1<br>net.ipv4.conf.lo.arp_ignore = 1<br>arp_ignore:定义了网卡在响应外部ARP请求时候的响应级别<br>0：默认值，不管哪块网卡接收到了ARP请求，只要发现本机有这个MAC都给与响应<br>1：总是使用最合适的网卡来响应，一个主机有多块网卡，其中一块网卡接收到了ARP请求，发现所请求的MAC是本机另一块网卡的，这个时候接收到ARP请求的这块网卡就一定不响应，只有发现请求的MAC是自己的才给与响应。<br>net.ipv4.conf.default.arp_announce =2<br>net.ipv4.conf.all.arp_announce =2<br>net.ipv4.conf.lo.arp_announce = 2<br>定义了网卡在向外宣告自己的MAC-IP时候的限制级别<br>有三个值：<br>0：默认值，不管哪块网卡接收到了ARP请求，只要发现本机有这个MAC都给与响应<br>1：尽量避免响应ARP请求中MAC不是本网卡的，一个主机有多块网卡，其中一块网卡接收到了ARP请求，发现所请求的MAC是本机另一块网卡的，这个时候接收到ARP请求的这块网卡就尽量避免响应<br>2：总是使用最合适的网卡来响应，一个主机有多块网卡，其中一块网卡接收到了ARP请求，发现所请求的MAC是本机另一块网卡的，这个时候接收到ARP请求的这块网卡就一定不响应，只有发现请求的MAC是自己的才给与响应。 </p>
+<p>执行sysctl-p使修改生效</p>
+<blockquote>
+<h1 id="sysctl-p"><a href="#sysctl-p" class="headerlink" title="sysctl-p"></a>sysctl-p</h1></blockquote>
+<p>完整配置<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div></pre></td><td class="code"><pre><div class="line">worker_processes  1;</div><div class="line"></div><div class="line">error_log  logs/error.log;</div><div class="line"></div><div class="line">events &#123;</div><div class="line">	worker_connections  1024;</div><div class="line">	multi_accept on;</div><div class="line">	use epoll;</div><div class="line">&#125;</div><div class="line"></div><div class="line"></div><div class="line">http &#123;</div><div class="line">    include       mime.types;</div><div class="line">    default_type  application/octet-stream;</div><div class="line"></div><div class="line">	sendfile        on;</div><div class="line">    tcp_nopush     on;</div><div class="line">	server_tokens	off;</div><div class="line"></div><div class="line">    keepalive_timeout  65;</div><div class="line"></div><div class="line">    gzip  on;</div><div class="line">	gzip_min_length  1k;</div><div class="line">	gzip_buffers     4 16k;</div><div class="line">	gzip_http_version 1.0;</div><div class="line">	gzip_comp_level 2;</div><div class="line">	gzip_types       text/plain application/x-javascript text/css application/xml;</div><div class="line">	gzip_vary on;</div><div class="line">	</div><div class="line">	open_file_cache max=102400 inactive=20s;</div><div class="line">	open_file_cache_valid 30s;</div><div class="line">	open_file_cache_min_uses 2;	</div><div class="line"></div><div class="line">	client_max_body_size 20m;</div><div class="line">	client_body_buffer_size 128k;</div><div class="line">	</div><div class="line">	#proxy_redirect off;</div><div class="line">	#proxy_set_header Host $host;</div><div class="line">	#proxy_set_header X-Real-IP $remote_addr;</div><div class="line">	#proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</div><div class="line">	#proxy_ignore_client_abort on;</div><div class="line">	#proxy_connect_timeout 60s;</div><div class="line">	#proxy_send_timeout 60s;</div><div class="line">	#proxy_read_timeout 60s;</div><div class="line">	#proxy_buffer_size 64k;</div><div class="line">	#proxy_buffers 4 64k;</div><div class="line">	#proxy_busy_buffers_size 128k;</div><div class="line">	#proxy_intercept_errors on;</div><div class="line"></div><div class="line">	#proxy_temp_path   /etc/nginx/proxy_temp;</div><div class="line">	#proxy_cache_path /etc/nginx/proxy_cache levels=1:2 keys_zone=one_cache:20m inactive=1d max_size=100m;</div><div class="line">	#proxy_ignore_headers X-Accel-Expires Expires Cache-Control Set-Cookie;</div><div class="line"></div><div class="line">    server &#123;</div><div class="line">        listen       80;</div><div class="line">        server_name  localhost;</div><div class="line"></div><div class="line">        location / &#123;</div><div class="line">            root   html;</div><div class="line">            index  index.html index.htm;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">		#location ~ .*\.(html|htm|ico|jpeg|git|jpg|png|bmp|swf)$ &#123;</div><div class="line">		#	root ;</div><div class="line">		#	proxy_pass http://www.demo.com:8080;</div><div class="line">		#	proxy_cookie_path /demo/ /;</div><div class="line">		#</div><div class="line">		#	proxy_cache one_cache;</div><div class="line">		#	proxy_cache_valid  200 304 301 302 1d;</div><div class="line">		#	proxy_cache_valid  any 6h;</div><div class="line">		#	proxy_cache_key $host$uri$is_args$args;</div><div class="line">		#	add_header X-Cache &apos;$upstream_cache_status from $host&apos;;</div><div class="line">		#	expires 7d;</div><div class="line">		#&#125;</div><div class="line">		#</div><div class="line">		#location ~ .*\.(css|js)$ &#123;</div><div class="line">		#	root ;</div><div class="line">		#	proxy_pass http://www.demo.com:8080;</div><div class="line">		#	proxy_cookie_path /demo/ /;</div><div class="line">		#</div><div class="line">		#	proxy_cache one_cache;</div><div class="line">		#	proxy_cache_valid  200 304 301 302 1d;</div><div class="line">		#	proxy_cache_valid  any 6h;</div><div class="line">		#	proxy_cache_key $host$uri$is_args$args;</div><div class="line">		#	add_header X-Cache &apos;$upstream_cache_status from $host&apos;;		</div><div class="line">		#	expires 1d;</div><div class="line">		#&#125;</div><div class="line">		#</div><div class="line">		#location ~ .*$ &#123;</div><div class="line">		#	proxy_pass http://www.demo.com:8080;</div><div class="line">		#	proxy_cookie_path /demo/ /;</div><div class="line">		#&#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/12/14/rpm包制作-mysql-5.7.16/" rel="next" title="rpm包制作之-mysql-5.7.16">
+                <i class="fa fa-chevron-left"></i> rpm包制作之-mysql-5.7.16
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/02/20/更多文章/" rel="prev" title="更多文章">
+                更多文章 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+  <div class="comments" id="comments">
+    
+      <div class="ds-thread" data-thread-key="2017/01/13/nginx优化的一些总结/"
+           data-title="nginx优化的一些总结" data-url="http://yoursite.com/2017/01/13/nginx优化的一些总结/">
+      </div>
+    
+  </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="http://olno6tnmz.bkt.clouddn.com/1.JPG"
+               alt="little sky" />
+          <p class="site-author-name" itemprop="name">little sky</p>
+           
+              <p class="site-description motion-element" itemprop="description"></p>
+          
+        </div>
+        <nav class="site-state motion-element">
+        
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">14</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            <div class="site-state-item site-state-categories">
+              <a href="/categories">
+                <span class="site-state-item-count">5</span>
+                <span class="site-state-item-name">分类</span>
+              </a>
+            </div>
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+            
+              <span class="links-of-author-item">
+                <a href="https://github.com/tytredhat" target="_blank" title="GitHub">
+                  
+                    <i class="fa fa-fw fa-github"></i>
+                  
+                  GitHub
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://weibo.com/litsky" target="_blank" title="Weibo">
+                  
+                    <i class="fa fa-fw fa-weibo"></i>
+                  
+                  Weibo
+                </a>
+              </span>
+            
+              <span class="links-of-author-item">
+                <a href="http://blog.csdn.net/tshangshi" target="_blank" title="CSDN">
+                  
+                    <i class="fa fa-fw fa-book"></i>
+                  
+                  CSDN
+                </a>
+              </span>
+            
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一．压缩"><span class="nav-number">1.</span> <span class="nav-text">一．压缩</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二．缓存"><span class="nav-number">2.</span> <span class="nav-text">二．缓存</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三．其他"><span class="nav-number">3.</span> <span class="nav-text">三．其他</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Events模块"><span class="nav-number">3.1.</span> <span class="nav-text">Events模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP-模块"><span class="nav-number">3.2.</span> <span class="nav-text">HTTP 模块</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-内核优化"><span class="nav-number">4.</span> <span class="nav-text">四.内核优化</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vim-etc-sysctl-conf"><span class="nav-number"></span> <span class="nav-text">vim /etc/sysctl.conf</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#netstat-s-grep-timestamp"><span class="nav-number"></span> <span class="nav-text">netstat -s|grep timestamp</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#sysctl-p"><span class="nav-number"></span> <span class="nav-text">sysctl-p</span></a></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">little sky</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Mist
+  </a>
+</div>
+
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  <script type="text/javascript">
+    var duoshuoQuery = {short_name:"ltsky"};
+    (function() {
+      var ds = document.createElement('script');
+      ds.type = 'text/javascript';ds.async = true;
+      ds.id = 'duoshuo-script';
+      ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+      ds.charset = 'UTF-8';
+      (document.getElementsByTagName('head')[0]
+      || document.getElementsByTagName('body')[0]).appendChild(ds);
+    })();
+  </script>
+
+  
+    
+    
+    <script src="/lib/ua-parser-js/dist/ua-parser.min.js?v=0.7.9"></script>
+    <script src="/js/src/hook-duoshuo.js"></script>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>
